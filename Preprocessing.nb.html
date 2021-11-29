@@ -215,14 +215,32 @@ pre code {
 
 
 <!-- rnb-text-begin -->
-<p>This is an <a href="http://rmarkdown.rstudio.com">R Markdown</a> Notebook. When you execute code within the notebook, the results appear beneath the code.</p>
-<p>Try executing this chunk by clicking the <em>Run</em> button within the chunk or by placing your cursor inside it and pressing <em>Ctrl+Shift+Enter</em>.</p>
+<p>##Step o library and dependency</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuaW5zdGFsbC5wYWNrYWdlcyhcInRtXCIpXG5pbnN0YWxsLnBhY2thZ2VzKFwiU25vd2JhbGxDXCIpXG5saWJyYXJ5KHRtKVxuYGBgIn0= -->
+<pre class="r"><code>install.packages(&quot;tm&quot;)
+install.packages(&quot;SnowballC&quot;)
+library(tm)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
 <p>##Step 1 Load Data</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGYgPC0gcmVhZC5jc3YoZmlsZSA9IFwiQzovVXNlcnMvVXNlci9Eb2N1bWVudHMvVU5JVFMvTWFnaXN0cmFsZS9QcmltbyBBbm5vLzHCsHNlbWVzdHJlL01hY2hpbmUgTGVhcm5pbmcvU3Zldm9MZXR0ZXJzL2NhcnRlZ2dpb3N2ZXZvMy5jc3ZcIiwgc2VwID0gXCI7XCIpXG5oZWFkKGRmKVxuYGBgIn0= -->
-<pre class="r"><code>df &lt;- read.csv(file = &quot;C:/Users/User/Documents/UNITS/Magistrale/Primo Anno/1°semestre/Machine Learning/SvevoLetters/carteggiosvevo3.csv&quot;, sep = &quot;;&quot;)
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGYgPC0gcmVhZC5jc3YoZmlsZSA9IFwiQzovVXNlcnMvVXNlci9Eb2N1bWVudHMvVU5JVFMvTWFnaXN0cmFsZS9QcmltbyBBbm5vLzHCsHNlbWVzdHJlL01hY2hpbmUgTGVhcm5pbmcvU3Zldm9MZXR0ZXJzL2NhcnRlZ2dpb3N2ZXZvMy5jc3ZcIiwgc2VwID0gXCI7XCIsIGhlYWRlciA9IFRSVUUpXG5oZWFkKGRmKVxuYGBgIn0= -->
+<pre class="r"><code>df &lt;- read.csv(file = &quot;C:/Users/User/Documents/UNITS/Magistrale/Primo Anno/1°semestre/Machine Learning/SvevoLetters/carteggiosvevo3.csv&quot;, sep = &quot;;&quot;, header = TRUE)
 head(df)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>##Step 2 pre processing</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuTGV0dGVyQ29ycHVzc2VjdGlvbiA8LSB0YWJsZShkZlssMl0pXG5TZWN0aW9ucyA8LSBkaW0oTGV0dGVyQ29ycHVzc2VjdGlvbilcblNlY3Rpb25zXG5gYGAifQ== -->
+<pre class="r"><code>LetterCorpussection &lt;- table(df[,2])
+Sections &lt;- dim(LetterCorpussection)
+Sections</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
@@ -231,7 +249,7 @@ head(df)</code></pre>
 <p>The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike <em>Knit</em>, <em>Preview</em> does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.</p>
 <!-- rnb-text-end -->
 
-<div id="rmd-source-code">LS0tDQp0aXRsZTogIlIgTm90ZWJvb2siDQpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sNCi0tLQ0KDQpUaGlzIGlzIGFuIFtSIE1hcmtkb3duXShodHRwOi8vcm1hcmtkb3duLnJzdHVkaW8uY29tKSBOb3RlYm9vay4gV2hlbiB5b3UgZXhlY3V0ZSBjb2RlIHdpdGhpbiB0aGUgbm90ZWJvb2ssIHRoZSByZXN1bHRzIGFwcGVhciBiZW5lYXRoIHRoZSBjb2RlLiANCg0KVHJ5IGV4ZWN1dGluZyB0aGlzIGNodW5rIGJ5IGNsaWNraW5nIHRoZSAqUnVuKiBidXR0b24gd2l0aGluIHRoZSBjaHVuayBvciBieSBwbGFjaW5nIHlvdXIgY3Vyc29yIGluc2lkZSBpdCBhbmQgcHJlc3NpbmcgKkN0cmwrU2hpZnQrRW50ZXIqLiANCg0KIyNTdGVwIDEgTG9hZCBEYXRhDQpgYGB7cn0NCmRmIDwtIHJlYWQuY3N2KGZpbGUgPSAiQzovVXNlcnMvVXNlci9Eb2N1bWVudHMvVU5JVFMvTWFnaXN0cmFsZS9QcmltbyBBbm5vLzHCsHNlbWVzdHJlL01hY2hpbmUgTGVhcm5pbmcvU3Zldm9MZXR0ZXJzL2NhcnRlZ2dpb3N2ZXZvMy5jc3YiLCBzZXAgPSAiOyIpDQpoZWFkKGRmKQ0KYGBgDQoNCkFkZCBhIG5ldyBjaHVuayBieSBjbGlja2luZyB0aGUgKkluc2VydCBDaHVuayogYnV0dG9uIG9uIHRoZSB0b29sYmFyIG9yIGJ5IHByZXNzaW5nICpDdHJsK0FsdCtJKi4NCg0KV2hlbiB5b3Ugc2F2ZSB0aGUgbm90ZWJvb2ssIGFuIEhUTUwgZmlsZSBjb250YWluaW5nIHRoZSBjb2RlIGFuZCBvdXRwdXQgd2lsbCBiZSBzYXZlZCBhbG9uZ3NpZGUgaXQgKGNsaWNrIHRoZSAqUHJldmlldyogYnV0dG9uIG9yIHByZXNzICpDdHJsK1NoaWZ0K0sqIHRvIHByZXZpZXcgdGhlIEhUTUwgZmlsZSkuDQoNClRoZSBwcmV2aWV3IHNob3dzIHlvdSBhIHJlbmRlcmVkIEhUTUwgY29weSBvZiB0aGUgY29udGVudHMgb2YgdGhlIGVkaXRvci4gQ29uc2VxdWVudGx5LCB1bmxpa2UgKktuaXQqLCAqUHJldmlldyogZG9lcyBub3QgcnVuIGFueSBSIGNvZGUgY2h1bmtzLiBJbnN0ZWFkLCB0aGUgb3V0cHV0IG9mIHRoZSBjaHVuayB3aGVuIGl0IHdhcyBsYXN0IHJ1biBpbiB0aGUgZWRpdG9yIGlzIGRpc3BsYXllZC4NCg==</div>
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIlIgTm90ZWJvb2siDQpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sNCi0tLQ0KIyNTdGVwIG8gbGlicmFyeSBhbmQgZGVwZW5kZW5jeQ0KYGBge3J9DQppbnN0YWxsLnBhY2thZ2VzKCJ0bSIpDQppbnN0YWxsLnBhY2thZ2VzKCJTbm93YmFsbEMiKQ0KbGlicmFyeSh0bSkNCmBgYA0KDQojI1N0ZXAgMSBMb2FkIERhdGENCmBgYHtyfQ0KZGYgPC0gcmVhZC5jc3YoZmlsZSA9ICJDOi9Vc2Vycy9Vc2VyL0RvY3VtZW50cy9VTklUUy9NYWdpc3RyYWxlL1ByaW1vIEFubm8vMcKwc2VtZXN0cmUvTWFjaGluZSBMZWFybmluZy9TdmV2b0xldHRlcnMvY2FydGVnZ2lvc3Zldm8zLmNzdiIsIHNlcCA9ICI7IiwgaGVhZGVyID0gVFJVRSkNCmhlYWQoZGYpDQpgYGANCiMjU3RlcCAyIHByZSBwcm9jZXNzaW5nDQpgYGB7cn0NCkxldHRlckNvcnB1c3NlY3Rpb24gPC0gdGFibGUoZGZbLDJdKQ0KU2VjdGlvbnMgPC0gZGltKExldHRlckNvcnB1c3NlY3Rpb24pDQpTZWN0aW9ucw0KYGBgDQpBZGQgYSBuZXcgY2h1bmsgYnkgY2xpY2tpbmcgdGhlICpJbnNlcnQgQ2h1bmsqIGJ1dHRvbiBvbiB0aGUgdG9vbGJhciBvciBieSBwcmVzc2luZyAqQ3RybCtBbHQrSSouDQoNCldoZW4geW91IHNhdmUgdGhlIG5vdGVib29rLCBhbiBIVE1MIGZpbGUgY29udGFpbmluZyB0aGUgY29kZSBhbmQgb3V0cHV0IHdpbGwgYmUgc2F2ZWQgYWxvbmdzaWRlIGl0IChjbGljayB0aGUgKlByZXZpZXcqIGJ1dHRvbiBvciBwcmVzcyAqQ3RybCtTaGlmdCtLKiB0byBwcmV2aWV3IHRoZSBIVE1MIGZpbGUpLg0KDQpUaGUgcHJldmlldyBzaG93cyB5b3UgYSByZW5kZXJlZCBIVE1MIGNvcHkgb2YgdGhlIGNvbnRlbnRzIG9mIHRoZSBlZGl0b3IuIENvbnNlcXVlbnRseSwgdW5saWtlICpLbml0KiwgKlByZXZpZXcqIGRvZXMgbm90IHJ1biBhbnkgUiBjb2RlIGNodW5rcy4gSW5zdGVhZCwgdGhlIG91dHB1dCBvZiB0aGUgY2h1bmsgd2hlbiBpdCB3YXMgbGFzdCBydW4gaW4gdGhlIGVkaXRvciBpcyBkaXNwbGF5ZWQuDQo=</div>
 
 
 
