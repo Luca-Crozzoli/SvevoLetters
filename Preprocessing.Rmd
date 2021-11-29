@@ -4,9 +4,32 @@ output: html_notebook
 ---
 ##Step o library and dependency
 ```{r}
+# loading the required packages
+install.packages("dplyr")
+install.packages("tidyr")
+install.packages("textreg")
 install.packages("tm")
-install.packages("SnowballC")
+install.packages("writexl")
+install.packages("corpus")
+install.packages("e1071")
+install.packages("wordcloud2")
+install.packages("caret")
+install.packages("tidytext")
+install.packages("tokenizers")
+install.packages("textclean")
+
+library(textclean)
+library(dplyr)
+library(tidyr)
+library(textreg)
 library(tm)
+library(writexl)
+library(corpus)
+library(e1071)
+library(wordcloud2)
+library(caret)
+library(tidytext)
+library(tokenizers)
 ```
 
 ##Step 1 Load Data
@@ -19,24 +42,84 @@ columns <- dimensions[2]
 ```
 ##Step 2 pre processing
 ```{r}
-LetterCorpussection <- table(df[,2])
-Sections <- dim(LetterCorpussection)
+LetterCorpusSection <- table(df[,2])
+Sections <- dim(LetterCorpusSection)
 Sections
 SectionNames <-levels(factor(df$corpus))
 SectionNames
-LetterCorpussection
+```
+##Updatying an eglish list to compute the stemming
+```{r}
+stem_hunspell <- function(term) {
+    # look up the term in the dictionary
+    stems <- hunspell::hunspell_stem(term)[[1]]
 
-  for (k in 1:45){
-    SectionNames[k]
-    for(i in 1:rows){
-    if (df[i,2] == SectionNames[k]){
-      data <- df[i, c("sender","recipient")]
-      print(data)
+    if (length(stems) == 0) { # if there are no stems, use the original term
+        stem <- term
+    } else { # if there are multiple stems, use the last one
+        stem <- stems[[length(stems)]]
     }
-      
+
+    stem
+}
+
+```
+
+##New section in which we perform preprocessing
+```{r}
+#clean the text data
+library(stringr)
+stop_words <- c(stopwords("en"),stopwords("italian"),stopwords("german"))
+df_clean <- df %>% 
+   mutate(text_clean = text %>% 
+             str_replace_all("[0-9]", " ") %>% 
+             str_replace_all("[-|]", " ") %>% 
+             tolower() %>% 
+             str_replace_all("[[:punct:]]", " ") %>% 
+             str_replace_all(" dr ", " doctor ") %>% 
+             str_replace_all(" s ", " ") %>%  
+             str_squish()%>%
+            str_trim()
+             
+          )
+# converting date into date object
+gsub("00","01",df_clean$date)# forunknown month or year we assume it is the first month and first year
+df_clean$date <- as.Date(df_clean$date,tryFormats = c("%d-%m-%Y", "%d/%m/%Y"))
+# verifying
+glimpse(df_clean)
+```
+
+##we count the number of words in each document 
+```{r}
+documents_length <- sapply(strsplit(df_clean$text, " "), length)
+documents_length
+
+documents_length %>% 
+   summary()
+```
+
+##create a copus composed only by the text data
+```{r}
+stem_hunspell <- function(term) {
+    # look up the term in the dictionary
+    stems <- hunspell_stem(term)[[1]]
+    
+    if (length(stems) == 0) { # if there are no stems, use the original term
+        stem <- term
+    } else { # if there are multiple stems, use the last one
+        stem <- stems[[length(stems)]]
     }
-  }
-  
+    return(stem)
+}
+
+news_term <- df_clean %>% 
+   unnest_tokens(output = "word", input = text_clean) %>% 
+   anti_join(stop_words)  %>% 
+   mutate(word = ifelse(word == "positive", "positives", word),
+          word = text_tokens(word, stemmer = stem_hunspell) %>% as.character() ) %>% 
+   drop_na(word) %>% 
+   count(V1, word)
+
 ```
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
 
