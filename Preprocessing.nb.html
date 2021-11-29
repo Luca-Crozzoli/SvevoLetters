@@ -228,19 +228,37 @@ library(tm)</code></pre>
 <p>##Step 1 Load Data</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGYgPC0gcmVhZC5jc3YoZmlsZSA9IFwiQzovVXNlcnMvVXNlci9Eb2N1bWVudHMvVU5JVFMvTWFnaXN0cmFsZS9QcmltbyBBbm5vLzHCsHNlbWVzdHJlL01hY2hpbmUgTGVhcm5pbmcvU3Zldm9MZXR0ZXJzL2NhcnRlZ2dpb3N2ZXZvMy5jc3ZcIiwgc2VwID0gXCI7XCIsIGhlYWRlciA9IFRSVUUpXG5oZWFkKGRmKVxuYGBgIn0= -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGYgPC0gcmVhZC5jc3YoZmlsZSA9IFwiQzovVXNlcnMvVXNlci9Eb2N1bWVudHMvVU5JVFMvTWFnaXN0cmFsZS9QcmltbyBBbm5vLzHCsHNlbWVzdHJlL01hY2hpbmUgTGVhcm5pbmcvU3Zldm9MZXR0ZXJzL2NhcnRlZ2dpb3N2ZXZvMy5jc3ZcIiwgc2VwID0gXCI7XCIsIGhlYWRlciA9IFRSVUUpXG5oZWFkKGRmKVxuZGltZW5zaW9ucyA8LSBkaW0oZGYpXG5yb3dzIDwtIGRpbWVuc2lvbnNbMV1cbmNvbHVtbnMgPC0gZGltZW5zaW9uc1syXVxuYGBgIn0= -->
 <pre class="r"><code>df &lt;- read.csv(file = &quot;C:/Users/User/Documents/UNITS/Magistrale/Primo Anno/1°semestre/Machine Learning/SvevoLetters/carteggiosvevo3.csv&quot;, sep = &quot;;&quot;, header = TRUE)
-head(df)</code></pre>
+head(df)
+dimensions &lt;- dim(df)
+rows &lt;- dimensions[1]
+columns &lt;- dimensions[2]</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>##Step 2 pre processing</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuTGV0dGVyQ29ycHVzc2VjdGlvbiA8LSB0YWJsZShkZlssMl0pXG5TZWN0aW9ucyA8LSBkaW0oTGV0dGVyQ29ycHVzc2VjdGlvbilcblNlY3Rpb25zXG5gYGAifQ== -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuTGV0dGVyQ29ycHVzc2VjdGlvbiA8LSB0YWJsZShkZlssMl0pXG5TZWN0aW9ucyA8LSBkaW0oTGV0dGVyQ29ycHVzc2VjdGlvbilcblNlY3Rpb25zXG5TZWN0aW9uTmFtZXMgPC1sZXZlbHMoZmFjdG9yKGRmJGNvcnB1cykpXG5TZWN0aW9uTmFtZXNcbkxldHRlckNvcnB1c3NlY3Rpb25cblxuICBmb3IgKGsgaW4gMTo0NSl7XG4gICAgU2VjdGlvbk5hbWVzW2tdXG4gICAgZm9yKGkgaW4gMTpyb3dzKXtcbiAgICBpZiAoZGZbaSwyXSA9PSBTZWN0aW9uTmFtZXNba10pe1xuICAgICAgZGF0YSA8LSBkZltpLCBjKFwic2VuZGVyXCIsXCJyZWNpcGllbnRcIildXG4gICAgICBwcmludChkYXRhKVxuICAgIH1cbiAgICAgIFxuICAgIH1cbiAgfVxuICBcbmBgYCJ9 -->
 <pre class="r"><code>LetterCorpussection &lt;- table(df[,2])
 Sections &lt;- dim(LetterCorpussection)
-Sections</code></pre>
+Sections
+SectionNames &lt;-levels(factor(df$corpus))
+SectionNames
+LetterCorpussection
+
+  for (k in 1:45){
+    SectionNames[k]
+    for(i in 1:rows){
+    if (df[i,2] == SectionNames[k]){
+      data &lt;- df[i, c(&quot;sender&quot;,&quot;recipient&quot;)]
+      print(data)
+    }
+      
+    }
+  }
+  </code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
@@ -249,7 +267,7 @@ Sections</code></pre>
 <p>The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike <em>Knit</em>, <em>Preview</em> does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.</p>
 <!-- rnb-text-end -->
 
-<div id="rmd-source-code">LS0tDQp0aXRsZTogIlIgTm90ZWJvb2siDQpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sNCi0tLQ0KIyNTdGVwIG8gbGlicmFyeSBhbmQgZGVwZW5kZW5jeQ0KYGBge3J9DQppbnN0YWxsLnBhY2thZ2VzKCJ0bSIpDQppbnN0YWxsLnBhY2thZ2VzKCJTbm93YmFsbEMiKQ0KbGlicmFyeSh0bSkNCmBgYA0KDQojI1N0ZXAgMSBMb2FkIERhdGENCmBgYHtyfQ0KZGYgPC0gcmVhZC5jc3YoZmlsZSA9ICJDOi9Vc2Vycy9Vc2VyL0RvY3VtZW50cy9VTklUUy9NYWdpc3RyYWxlL1ByaW1vIEFubm8vMcKwc2VtZXN0cmUvTWFjaGluZSBMZWFybmluZy9TdmV2b0xldHRlcnMvY2FydGVnZ2lvc3Zldm8zLmNzdiIsIHNlcCA9ICI7IiwgaGVhZGVyID0gVFJVRSkNCmhlYWQoZGYpDQpgYGANCiMjU3RlcCAyIHByZSBwcm9jZXNzaW5nDQpgYGB7cn0NCkxldHRlckNvcnB1c3NlY3Rpb24gPC0gdGFibGUoZGZbLDJdKQ0KU2VjdGlvbnMgPC0gZGltKExldHRlckNvcnB1c3NlY3Rpb24pDQpTZWN0aW9ucw0KYGBgDQpBZGQgYSBuZXcgY2h1bmsgYnkgY2xpY2tpbmcgdGhlICpJbnNlcnQgQ2h1bmsqIGJ1dHRvbiBvbiB0aGUgdG9vbGJhciBvciBieSBwcmVzc2luZyAqQ3RybCtBbHQrSSouDQoNCldoZW4geW91IHNhdmUgdGhlIG5vdGVib29rLCBhbiBIVE1MIGZpbGUgY29udGFpbmluZyB0aGUgY29kZSBhbmQgb3V0cHV0IHdpbGwgYmUgc2F2ZWQgYWxvbmdzaWRlIGl0IChjbGljayB0aGUgKlByZXZpZXcqIGJ1dHRvbiBvciBwcmVzcyAqQ3RybCtTaGlmdCtLKiB0byBwcmV2aWV3IHRoZSBIVE1MIGZpbGUpLg0KDQpUaGUgcHJldmlldyBzaG93cyB5b3UgYSByZW5kZXJlZCBIVE1MIGNvcHkgb2YgdGhlIGNvbnRlbnRzIG9mIHRoZSBlZGl0b3IuIENvbnNlcXVlbnRseSwgdW5saWtlICpLbml0KiwgKlByZXZpZXcqIGRvZXMgbm90IHJ1biBhbnkgUiBjb2RlIGNodW5rcy4gSW5zdGVhZCwgdGhlIG91dHB1dCBvZiB0aGUgY2h1bmsgd2hlbiBpdCB3YXMgbGFzdCBydW4gaW4gdGhlIGVkaXRvciBpcyBkaXNwbGF5ZWQuDQo=</div>
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIlIgTm90ZWJvb2siDQpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sNCi0tLQ0KIyNTdGVwIG8gbGlicmFyeSBhbmQgZGVwZW5kZW5jeQ0KYGBge3J9DQppbnN0YWxsLnBhY2thZ2VzKCJ0bSIpDQppbnN0YWxsLnBhY2thZ2VzKCJTbm93YmFsbEMiKQ0KbGlicmFyeSh0bSkNCmBgYA0KDQojI1N0ZXAgMSBMb2FkIERhdGENCmBgYHtyfQ0KZGYgPC0gcmVhZC5jc3YoZmlsZSA9ICJDOi9Vc2Vycy9Vc2VyL0RvY3VtZW50cy9VTklUUy9NYWdpc3RyYWxlL1ByaW1vIEFubm8vMcKwc2VtZXN0cmUvTWFjaGluZSBMZWFybmluZy9TdmV2b0xldHRlcnMvY2FydGVnZ2lvc3Zldm8zLmNzdiIsIHNlcCA9ICI7IiwgaGVhZGVyID0gVFJVRSkNCmhlYWQoZGYpDQpkaW1lbnNpb25zIDwtIGRpbShkZikNCnJvd3MgPC0gZGltZW5zaW9uc1sxXQ0KY29sdW1ucyA8LSBkaW1lbnNpb25zWzJdDQpgYGANCiMjU3RlcCAyIHByZSBwcm9jZXNzaW5nDQpgYGB7cn0NCkxldHRlckNvcnB1c3NlY3Rpb24gPC0gdGFibGUoZGZbLDJdKQ0KU2VjdGlvbnMgPC0gZGltKExldHRlckNvcnB1c3NlY3Rpb24pDQpTZWN0aW9ucw0KU2VjdGlvbk5hbWVzIDwtbGV2ZWxzKGZhY3RvcihkZiRjb3JwdXMpKQ0KU2VjdGlvbk5hbWVzDQpMZXR0ZXJDb3JwdXNzZWN0aW9uDQoNCiAgZm9yIChrIGluIDE6NDUpew0KICAgIFNlY3Rpb25OYW1lc1trXQ0KICAgIGZvcihpIGluIDE6cm93cyl7DQogICAgaWYgKGRmW2ksMl0gPT0gU2VjdGlvbk5hbWVzW2tdKXsNCiAgICAgIGRhdGEgPC0gZGZbaSwgYygic2VuZGVyIiwicmVjaXBpZW50IildDQogICAgICBwcmludChkYXRhKQ0KICAgIH0NCiAgICAgIA0KICAgIH0NCiAgfQ0KICANCmBgYA0KQWRkIGEgbmV3IGNodW5rIGJ5IGNsaWNraW5nIHRoZSAqSW5zZXJ0IENodW5rKiBidXR0b24gb24gdGhlIHRvb2xiYXIgb3IgYnkgcHJlc3NpbmcgKkN0cmwrQWx0K0kqLg0KDQpXaGVuIHlvdSBzYXZlIHRoZSBub3RlYm9vaywgYW4gSFRNTCBmaWxlIGNvbnRhaW5pbmcgdGhlIGNvZGUgYW5kIG91dHB1dCB3aWxsIGJlIHNhdmVkIGFsb25nc2lkZSBpdCAoY2xpY2sgdGhlICpQcmV2aWV3KiBidXR0b24gb3IgcHJlc3MgKkN0cmwrU2hpZnQrSyogdG8gcHJldmlldyB0aGUgSFRNTCBmaWxlKS4NCg0KVGhlIHByZXZpZXcgc2hvd3MgeW91IGEgcmVuZGVyZWQgSFRNTCBjb3B5IG9mIHRoZSBjb250ZW50cyBvZiB0aGUgZWRpdG9yLiBDb25zZXF1ZW50bHksIHVubGlrZSAqS25pdCosICpQcmV2aWV3KiBkb2VzIG5vdCBydW4gYW55IFIgY29kZSBjaHVua3MuIEluc3RlYWQsIHRoZSBvdXRwdXQgb2YgdGhlIGNodW5rIHdoZW4gaXQgd2FzIGxhc3QgcnVuIGluIHRoZSBlZGl0b3IgaXMgZGlzcGxheWVkLg0K</div>
 
 
 

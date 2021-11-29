@@ -13,12 +13,30 @@ library(tm)
 ```{r}
 df <- read.csv(file = "C:/Users/User/Documents/UNITS/Magistrale/Primo Anno/1°semestre/Machine Learning/SvevoLetters/carteggiosvevo3.csv", sep = ";", header = TRUE)
 head(df)
+dimensions <- dim(df)
+rows <- dimensions[1]
+columns <- dimensions[2]
 ```
 ##Step 2 pre processing
 ```{r}
 LetterCorpussection <- table(df[,2])
 Sections <- dim(LetterCorpussection)
 Sections
+SectionNames <-levels(factor(df$corpus))
+SectionNames
+LetterCorpussection
+
+  for (k in 1:45){
+    SectionNames[k]
+    for(i in 1:rows){
+    if (df[i,2] == SectionNames[k]){
+      data <- df[i, c("sender","recipient")]
+      print(data)
+    }
+      
+    }
+  }
+  
 ```
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
 
