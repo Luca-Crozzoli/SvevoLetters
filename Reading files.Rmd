@@ -12,12 +12,27 @@ Try executing this chunk by clicking the *Run* button within the chunk or by pla
 rm(list=ls())
 df <- read.csv(file = "./carteggiosvevo3.csv",sep = ";")
 head(df)
+install.packages("tm")
+install.packages("SnowballC")
+library(tm)
 ```
 
 ##Step 2 Data Preprocessing
 ```{r}
-install.packages("tm")
+letter1 <- df[1,"text"]
+letter1
+tokenized <- Boost_tokenizer(letter1)
+lowercase <- tolower(tokenized)
+noPunctuation <- removePunctuation(lowercase)
+nonumbers <- removeNumbers(noPunctuation)
+noSpaces <- stripWhitespace(nonumbers)
+new_stops <- c(stopwords("en"),stopwords("german"),stopwords("italian"))
+letterResult <-removeWords(noSpaces, new_stops)
+letterResult
 
+#Stemming procedure
+stemmed <- stemDocument(letterResult)
+stemmed
 ```
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
 
