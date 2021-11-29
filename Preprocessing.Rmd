@@ -49,44 +49,19 @@ SectionNames <-levels(factor(df$corpus))
 SectionNames
 ```
 ##Updatying an eglish list to compute the stemming
-```{r}
-stem_hunspell <- function(term) {
-    # look up the term in the dictionary
-    stems <- hunspell::hunspell_stem(term)[[1]]
 
-    if (length(stems) == 0) { # if there are no stems, use the original term
-        stem <- term
-    } else { # if there are multiple stems, use the last one
-        stem <- stems[[length(stems)]]
-    }
-
-    stem
-}
-
-```
 
 ##New section in which we perform preprocessing
 ```{r}
-#clean the text data
-library(stringr)
-stop_words <- c(stopwords("en"),stopwords("italian"),stopwords("german"))
-df_clean <- df %>% 
-   mutate(text_clean = text %>% 
-             str_replace_all("[0-9]", " ") %>% 
-             str_replace_all("[-|]", " ") %>% 
-             tolower() %>% 
-             str_replace_all("[[:punct:]]", " ") %>% 
-             str_replace_all(" dr ", " doctor ") %>% 
-             str_replace_all(" s ", " ") %>%  
-             str_squish()%>%
-            str_trim()
-             
-          )
-# converting date into date object
-gsub("00","01",df_clean$date)# forunknown month or year we assume it is the first month and first year
-df_clean$date <- as.Date(df_clean$date,tryFormats = c("%d-%m-%Y", "%d/%m/%Y"))
+
+df$date <- gsub("00","01",df$date)#forunknown month or year we assume it is the first month and first year
+df$date
+
+#converting the data as a character into a Date object 
+df$date <- as.Date(df$date,tryFormats = c("%d-%m-%Y", "%d/%m/%Y"))
 # verifying
-glimpse(df_clean)
+df$date
+
 ```
 
 ##we count the number of words in each document 
