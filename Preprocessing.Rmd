@@ -64,7 +64,7 @@ df$date
 
 ```
 
-##we count the number of words in each document 
+##OLD things
 ```{r}
 documents_length <- sapply(strsplit(df_clean$text, " "), length)
 documents_length
@@ -75,6 +75,48 @@ documents_length %>%
 
 ##create a copus composed only by the text data
 ```{r}
+myCorpus <- VCorpus(VectorSource(df$text))
+myCorpus[[50]][["content"]]
+
+```
+##removing Numbers
+```{r}
+myCorpus <- tm_map(myCorpus,content_transformer(removeNumbers))
+myCorpus[[50]][["content"]]
+```
+##removing Punctuations
+```{r}
+removeNumPunct <- function(x) gsub("([<>])|[[:punct:]]", " ", x)
+myCorpus <- tm_map(myCorpus, content_transformer(removeNumPunct))
+myCorpus[[50]][["content"]]
+```
+##convertgin to lower case
+```{r}
+myCorpus <- tm_map(myCorpus, content_transformer(tolower))
+myCorpus[[50]][["content"]]
+```
+##removing stop words
+```{r}
+myStopwords <- c(stopwords(kind = 'SMART'))
+myCorpus <- tm_map(myCorpus, removeWords, myStopwords)
+myCorpus[[50]][["content"]]
+```
+## remove extra whitespaces
+```{r}
+myCorpus <- tm_map(myCorpus, stripWhitespace)
+myCorpus[[50]][["content"]]
+```
+
+##Conversion of vectors into character to allow tokenization
+```{r}
+char_corpus <- convert.tm.to.character(myCorpus)
+char_corpus
+
+myCorpus[[50]][["content"]]
+```
+##stemming function
+```{r}
+library(hunspell)
 stem_hunspell <- function(term) {
     # look up the term in the dictionary
     stems <- hunspell_stem(term)[[1]]
@@ -86,15 +128,39 @@ stem_hunspell <- function(term) {
     }
     return(stem)
 }
+#counting word occourency correpsonding to a steam
+allwords <- hunspell_parse(char_corpus, format = "text")
+stems <- unlist(stem_hunspell(unlist(allwords)))
+words <- sort(table(stems), decreasing = TRUE)
+print(head(words, 30))
 
-news_term <- df_clean %>% 
-   unnest_tokens(output = "word", input = text_clean) %>% 
-   anti_join(stop_words)  %>% 
-   mutate(word = ifelse(word == "positive", "positives", word),
-          word = text_tokens(word, stemmer = stem_hunspell) %>% as.character() ) %>% 
-   drop_na(word) %>% 
-   count(V1, word)
+#Removing stop words from all the words
+df_words <- as.data.frame(words)
+df_words$stems <- as.character(df_words$stems)
+stops <- df_words$stems %in% stopwords(kind = "en")
+wcdata <- head(df_words[!stops,], 150)
+print(wcdata, max = 40)
 
+#Plot the cloud of words based on the frequency
+install.packages("wordcloud")
+library(wordcloud2)
+names(wcdata) <- c("word", "freq")
+wcdata$freq <- (wcdata$freq)^(2/3)
+wordcloud2(wcdata)
+```
+
+```{r}
+dtm <- TermDocumentMatrix(myCorpus)
+m <- as.matrix(dtm)
+v <- sort(rowSums(m),decreasing=TRUE)
+d <- data.frame(word = names(v),freq=v)
+head(d, 10)
+install.packages("wordcloud")
+library(wordcloud)
+set.seed(1234)
+wordcloud(words = d$word, freq = d$freq, min.freq = 1,
+          max.words=200, random.order=FALSE, rot.per=0.35, 
+          colors=brewer.pal(8, "Dark2"))
 ```
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
 
