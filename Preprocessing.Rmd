@@ -7,9 +7,7 @@ output: html_notebook
 # loading the required packages
 install.packages("dplyr")
 install.packages("tidyr")
-install.packages("textreg")
 install.packages("tm")
-install.packages("writexl")
 install.packages("corpus")
 install.packages("e1071")
 install.packages("wordcloud2")
@@ -17,6 +15,7 @@ install.packages("caret")
 install.packages("tidytext")
 install.packages("tokenizers")
 install.packages("textclean")
+install.packages("stopwords")
 
 library(textclean)
 library(dplyr)
@@ -34,7 +33,7 @@ library(tokenizers)
 
 ##Step 1 Load Data
 ```{r}
-df <- read.csv(file = "C:/Users/User/Documents/UNITS/Magistrale/Primo Anno/1°semestre/Machine Learning/SvevoLetters/carteggiosvevo3.csv", sep = ";", header = TRUE)
+df <- read.csv(file = "C:/Users/User/Documents/UNITS/Magistrale/Primo Anno/1°semestre/Machine Learning/SvevoLetters/carteggiosvevoShort80.csv", sep = ";", header = TRUE)
 head(df)
 dimensions <- dim(df)
 rows <- dimensions[1]
@@ -48,7 +47,6 @@ Sections
 SectionNames <-levels(factor(df$corpus))
 SectionNames
 ```
-##Updatying an eglish list to compute the stemming
 
 
 ##New section in which we perform preprocessing
@@ -59,62 +57,45 @@ df$date
 
 #converting the data as a character into a Date object 
 df$date <- as.Date(df$date,tryFormats = c("%d-%m-%Y", "%d/%m/%Y"))
-# verifying
-df$date
+
 
 ```
 
-##OLD things
-```{r}
-documents_length <- sapply(strsplit(df_clean$text, " "), length)
-documents_length
-
-documents_length %>% 
-   summary()
-```
 
 ##create a copus composed only by the text data
 ```{r}
-myCorpus <- VCorpus(VectorSource(df$text))
-myCorpus[[50]][["content"]]
+myCorpus <-VCorpus(VectorSource(textclean::replace_non_ascii(df$text)))
 
 ```
 ##removing Numbers
 ```{r}
-myCorpus <- tm_map(myCorpus,content_transformer(removeNumbers))
-myCorpus[[50]][["content"]]
+myCorpus <- tm_map(myCorpus, removeNumbers)
+myCorpus
 ```
 ##removing Punctuations
 ```{r}
-removeNumPunct <- function(x) gsub("([<>])|[[:punct:]]", " ", x)
-myCorpus <- tm_map(myCorpus, content_transformer(removeNumPunct))
-myCorpus[[50]][["content"]]
+myCorpus <- tm_map(myCorpus, removePunctuation)
+myCorpus[[36]][["content"]]
 ```
 ##convertgin to lower case
 ```{r}
 myCorpus <- tm_map(myCorpus, content_transformer(tolower))
-myCorpus[[50]][["content"]]
+myCorpus[[36]][["content"]]
 ```
 ##removing stop words
 ```{r}
-myStopwords <- c(stopwords(kind = 'SMART'))
+myStopwords <- c(stopwords("it"),stopwords("en"), stopwords("de"),stopwords("fr"))
 myCorpus <- tm_map(myCorpus, removeWords, myStopwords)
-myCorpus[[50]][["content"]]
+myCorpus[[36]][["content"]]
 ```
 ## remove extra whitespaces
 ```{r}
 myCorpus <- tm_map(myCorpus, stripWhitespace)
-myCorpus[[50]][["content"]]
+myCorpus[[36]][["content"]]
 ```
 
-##Conversion of vectors into character to allow tokenization
-```{r}
-char_corpus <- convert.tm.to.character(myCorpus)
-char_corpus
 
-myCorpus[[50]][["content"]]
-```
-##stemming function
+##Tokenization and stemming function
 ```{r}
 library(hunspell)
 stem_hunspell <- function(term) {
@@ -128,10 +109,15 @@ stem_hunspell <- function(term) {
     }
     return(stem)
 }
-#counting word occourency correpsonding to a steam
-allwords <- hunspell_parse(char_corpus, format = "text")
-stems <- unlist(stem_hunspell(unlist(allwords)))
-words <- sort(table(stems), decreasing = TRUE)
+    
+#CharacterCorpus <- convert.tm.to.character(myCorpus)
+myCorpus%>% text_tokens(stemmer=stem_hunspell)
+dtm<-TermDocumentMatrix(myCorpus)
+inspect(dtm)
+```
+##stemming function
+```{r}
+words <- sort(table(letter_terms), decreasing = TRUE)
 print(head(words, 30))
 
 #Removing stop words from all the words
@@ -141,12 +127,6 @@ stops <- df_words$stems %in% stopwords(kind = "en")
 wcdata <- head(df_words[!stops,], 150)
 print(wcdata, max = 40)
 
-#Plot the cloud of words based on the frequency
-install.packages("wordcloud")
-library(wordcloud2)
-names(wcdata) <- c("word", "freq")
-wcdata$freq <- (wcdata$freq)^(2/3)
-wordcloud2(wcdata)
 ```
 
 ```{r}

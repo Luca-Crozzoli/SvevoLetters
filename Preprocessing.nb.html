@@ -218,13 +218,11 @@ pre code {
 <p>##Step o library and dependency</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBsb2FkaW5nIHRoZSByZXF1aXJlZCBwYWNrYWdlc1xuaW5zdGFsbC5wYWNrYWdlcyhcImRwbHlyXCIpXG5pbnN0YWxsLnBhY2thZ2VzKFwidGlkeXJcIilcbmluc3RhbGwucGFja2FnZXMoXCJ0ZXh0cmVnXCIpXG5pbnN0YWxsLnBhY2thZ2VzKFwidG1cIilcbmluc3RhbGwucGFja2FnZXMoXCJ3cml0ZXhsXCIpXG5pbnN0YWxsLnBhY2thZ2VzKFwiY29ycHVzXCIpXG5pbnN0YWxsLnBhY2thZ2VzKFwiZTEwNzFcIilcbmluc3RhbGwucGFja2FnZXMoXCJ3b3JkY2xvdWQyXCIpXG5pbnN0YWxsLnBhY2thZ2VzKFwiY2FyZXRcIilcbmluc3RhbGwucGFja2FnZXMoXCJ0aWR5dGV4dFwiKVxuaW5zdGFsbC5wYWNrYWdlcyhcInRva2VuaXplcnNcIilcbmluc3RhbGwucGFja2FnZXMoXCJ0ZXh0Y2xlYW5cIilcblxubGlicmFyeSh0ZXh0Y2xlYW4pXG5saWJyYXJ5KGRwbHlyKVxubGlicmFyeSh0aWR5cilcbmxpYnJhcnkodGV4dHJlZylcbmxpYnJhcnkodG0pXG5saWJyYXJ5KHdyaXRleGwpXG5saWJyYXJ5KGNvcnB1cylcbmxpYnJhcnkoZTEwNzEpXG5saWJyYXJ5KHdvcmRjbG91ZDIpXG5saWJyYXJ5KGNhcmV0KVxubGlicmFyeSh0aWR5dGV4dClcbmxpYnJhcnkodG9rZW5pemVycylcbmBgYCJ9 -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBsb2FkaW5nIHRoZSByZXF1aXJlZCBwYWNrYWdlc1xuaW5zdGFsbC5wYWNrYWdlcyhcImRwbHlyXCIpXG5pbnN0YWxsLnBhY2thZ2VzKFwidGlkeXJcIilcbmluc3RhbGwucGFja2FnZXMoXCJ0bVwiKVxuaW5zdGFsbC5wYWNrYWdlcyhcImNvcnB1c1wiKVxuaW5zdGFsbC5wYWNrYWdlcyhcImUxMDcxXCIpXG5pbnN0YWxsLnBhY2thZ2VzKFwid29yZGNsb3VkMlwiKVxuaW5zdGFsbC5wYWNrYWdlcyhcImNhcmV0XCIpXG5pbnN0YWxsLnBhY2thZ2VzKFwidGlkeXRleHRcIilcbmluc3RhbGwucGFja2FnZXMoXCJ0b2tlbml6ZXJzXCIpXG5pbnN0YWxsLnBhY2thZ2VzKFwidGV4dGNsZWFuXCIpXG5pbnN0YWxsLnBhY2thZ2VzKFwic3RvcHdvcmRzXCIpXG5cbmxpYnJhcnkodGV4dGNsZWFuKVxubGlicmFyeShkcGx5cilcbmxpYnJhcnkodGlkeXIpXG5saWJyYXJ5KHRleHRyZWcpXG5saWJyYXJ5KHRtKVxubGlicmFyeSh3cml0ZXhsKVxubGlicmFyeShjb3JwdXMpXG5saWJyYXJ5KGUxMDcxKVxubGlicmFyeSh3b3JkY2xvdWQyKVxubGlicmFyeShjYXJldClcbmxpYnJhcnkodGlkeXRleHQpXG5saWJyYXJ5KHRva2VuaXplcnMpXG5gYGAifQ== -->
 <pre class="r"><code># loading the required packages
 install.packages(&quot;dplyr&quot;)
 install.packages(&quot;tidyr&quot;)
-install.packages(&quot;textreg&quot;)
 install.packages(&quot;tm&quot;)
-install.packages(&quot;writexl&quot;)
 install.packages(&quot;corpus&quot;)
 install.packages(&quot;e1071&quot;)
 install.packages(&quot;wordcloud2&quot;)
@@ -232,6 +230,7 @@ install.packages(&quot;caret&quot;)
 install.packages(&quot;tidytext&quot;)
 install.packages(&quot;tokenizers&quot;)
 install.packages(&quot;textclean&quot;)
+install.packages(&quot;stopwords&quot;)
 
 library(textclean)
 library(dplyr)
@@ -251,8 +250,8 @@ library(tokenizers)</code></pre>
 <p>##Step 1 Load Data</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGYgPC0gcmVhZC5jc3YoZmlsZSA9IFwiQzovVXNlcnMvVXNlci9Eb2N1bWVudHMvVU5JVFMvTWFnaXN0cmFsZS9QcmltbyBBbm5vLzHCsHNlbWVzdHJlL01hY2hpbmUgTGVhcm5pbmcvU3Zldm9MZXR0ZXJzL2NhcnRlZ2dpb3N2ZXZvMy5jc3ZcIiwgc2VwID0gXCI7XCIsIGhlYWRlciA9IFRSVUUpXG5oZWFkKGRmKVxuZGltZW5zaW9ucyA8LSBkaW0oZGYpXG5yb3dzIDwtIGRpbWVuc2lvbnNbMV1cbmNvbHVtbnMgPC0gZGltZW5zaW9uc1syXVxuYGBgIn0= -->
-<pre class="r"><code>df &lt;- read.csv(file = &quot;C:/Users/User/Documents/UNITS/Magistrale/Primo Anno/1°semestre/Machine Learning/SvevoLetters/carteggiosvevo3.csv&quot;, sep = &quot;;&quot;, header = TRUE)
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGYgPC0gcmVhZC5jc3YoZmlsZSA9IFwiQzovVXNlcnMvVXNlci9Eb2N1bWVudHMvVU5JVFMvTWFnaXN0cmFsZS9QcmltbyBBbm5vLzHCsHNlbWVzdHJlL01hY2hpbmUgTGVhcm5pbmcvU3Zldm9MZXR0ZXJzL2NhcnRlZ2dpb3N2ZXZvU2hvcnQ4MC5jc3ZcIiwgc2VwID0gXCI7XCIsIGhlYWRlciA9IFRSVUUpXG5oZWFkKGRmKVxuZGltZW5zaW9ucyA8LSBkaW0oZGYpXG5yb3dzIDwtIGRpbWVuc2lvbnNbMV1cbmNvbHVtbnMgPC0gZGltZW5zaW9uc1syXVxuYGBgIn0= -->
+<pre class="r"><code>df &lt;- read.csv(file = &quot;C:/Users/User/Documents/UNITS/Magistrale/Primo Anno/1°semestre/Machine Learning/SvevoLetters/carteggiosvevoShort80.csv&quot;, sep = &quot;;&quot;, header = TRUE)
 head(df)
 dimensions &lt;- dim(df)
 rows &lt;- dimensions[1]
@@ -272,41 +271,25 @@ SectionNames</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>##Updatying an eglish list to compute the stemming</p>
 <p>##New section in which we perform preprocessing</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5kZiRkYXRlIDwtIGdzdWIoXCIwMFwiLFwiMDFcIixkZiRkYXRlKSNmb3J1bmtub3duIG1vbnRoIG9yIHllYXIgd2UgYXNzdW1lIGl0IGlzIHRoZSBmaXJzdCBtb250aCBhbmQgZmlyc3QgeWVhclxuZGYkZGF0ZVxuXG4jY29udmVydGluZyB0aGUgZGF0YSBhcyBhIGNoYXJhY3RlciBpbnRvIGEgRGF0ZSBvYmplY3QgXG5kZiRkYXRlIDwtIGFzLkRhdGUoZGYkZGF0ZSx0cnlGb3JtYXRzID0gYyhcIiVkLSVtLSVZXCIsIFwiJWQvJW0vJVlcIikpXG4jIHZlcmlmeWluZ1xuZGYkZGF0ZVxuXG5gYGAifQ== -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5kZiRkYXRlIDwtIGdzdWIoXCIwMFwiLFwiMDFcIixkZiRkYXRlKSNmb3J1bmtub3duIG1vbnRoIG9yIHllYXIgd2UgYXNzdW1lIGl0IGlzIHRoZSBmaXJzdCBtb250aCBhbmQgZmlyc3QgeWVhclxuZGYkZGF0ZVxuXG4jY29udmVydGluZyB0aGUgZGF0YSBhcyBhIGNoYXJhY3RlciBpbnRvIGEgRGF0ZSBvYmplY3QgXG5kZiRkYXRlIDwtIGFzLkRhdGUoZGYkZGF0ZSx0cnlGb3JtYXRzID0gYyhcIiVkLSVtLSVZXCIsIFwiJWQvJW0vJVlcIikpXG5cblxuYGBgIn0= -->
 <pre class="r"><code>
 df$date &lt;- gsub(&quot;00&quot;,&quot;01&quot;,df$date)#forunknown month or year we assume it is the first month and first year
 df$date
 
 #converting the data as a character into a Date object 
 df$date &lt;- as.Date(df$date,tryFormats = c(&quot;%d-%m-%Y&quot;, &quot;%d/%m/%Y&quot;))
-# verifying
-df$date
 </code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<p>##OLD things</p>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZG9jdW1lbnRzX2xlbmd0aCA8LSBzYXBwbHkoc3Ryc3BsaXQoZGZfY2xlYW4kdGV4dCwgXCIgXCIpLCBsZW5ndGgpXG5kb2N1bWVudHNfbGVuZ3RoXG5cbmRvY3VtZW50c19sZW5ndGggJT4lIFxuICAgc3VtbWFyeSgpXG5gYGAifQ== -->
-<pre class="r"><code>documents_length &lt;- sapply(strsplit(df_clean$text, &quot; &quot;), length)
-documents_length
-
-documents_length %&gt;% 
-   summary()</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>##create a copus composed only by the text data</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubXlDb3JwdXMgPC0gVkNvcnB1cyhWZWN0b3JTb3VyY2UoZGYkdGV4dCkpXG5teUNvcnB1c1tbNTBdXVtbXCJjb250ZW50XCJdXVxuXG5gYGAifQ== -->
-<pre class="r"><code>myCorpus &lt;- VCorpus(VectorSource(df$text))
-myCorpus[[50]][[&quot;content&quot;]]
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubXlDb3JwdXMgPC1WQ29ycHVzKFZlY3RvclNvdXJjZSh0ZXh0Y2xlYW46OnJlcGxhY2Vfbm9uX2FzY2lpKGRmJHRleHQpKSlcblxuYGBgIn0= -->
+<pre class="r"><code>myCorpus &lt;-VCorpus(VectorSource(textclean::replace_non_ascii(df$text)))
 </code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
@@ -314,38 +297,37 @@ myCorpus[[50]][[&quot;content&quot;]]
 <p>##removing Numbers</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubXlDb3JwdXMgPC0gdG1fbWFwKG15Q29ycHVzLGNvbnRlbnRfdHJhbnNmb3JtZXIocmVtb3ZlTnVtYmVycykpXG5teUNvcnB1c1tbNTBdXVtbXCJjb250ZW50XCJdXVxuYGBgIn0= -->
-<pre class="r"><code>myCorpus &lt;- tm_map(myCorpus,content_transformer(removeNumbers))
-myCorpus[[50]][[&quot;content&quot;]]</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubXlDb3JwdXMgPC0gdG1fbWFwKG15Q29ycHVzLCByZW1vdmVOdW1iZXJzKVxubXlDb3JwdXNcbmBgYCJ9 -->
+<pre class="r"><code>myCorpus &lt;- tm_map(myCorpus, removeNumbers)
+myCorpus</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>##removing Punctuations</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucmVtb3ZlTnVtUHVuY3QgPC0gZnVuY3Rpb24oeCkgZ3N1YihcIihbPD5dKXxbWzpwdW5jdDpdXVwiLCBcIiBcIiwgeClcbm15Q29ycHVzIDwtIHRtX21hcChteUNvcnB1cywgY29udGVudF90cmFuc2Zvcm1lcihyZW1vdmVOdW1QdW5jdCkpXG5teUNvcnB1c1tbNTBdXVtbXCJjb250ZW50XCJdXVxuYGBgIn0= -->
-<pre class="r"><code>removeNumPunct &lt;- function(x) gsub(&quot;([&lt;&gt;])|[[:punct:]]&quot;, &quot; &quot;, x)
-myCorpus &lt;- tm_map(myCorpus, content_transformer(removeNumPunct))
-myCorpus[[50]][[&quot;content&quot;]]</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubXlDb3JwdXMgPC0gdG1fbWFwKG15Q29ycHVzLCByZW1vdmVQdW5jdHVhdGlvbilcbm15Q29ycHVzW1szNl1dW1tcImNvbnRlbnRcIl1dXG5gYGAifQ== -->
+<pre class="r"><code>myCorpus &lt;- tm_map(myCorpus, removePunctuation)
+myCorpus[[36]][[&quot;content&quot;]]</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>##convertgin to lower case</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubXlDb3JwdXMgPC0gdG1fbWFwKG15Q29ycHVzLCBjb250ZW50X3RyYW5zZm9ybWVyKHRvbG93ZXIpKVxubXlDb3JwdXNbWzUwXV1bW1wiY29udGVudFwiXV1cbmBgYCJ9 -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubXlDb3JwdXMgPC0gdG1fbWFwKG15Q29ycHVzLCBjb250ZW50X3RyYW5zZm9ybWVyKHRvbG93ZXIpKVxubXlDb3JwdXNbWzM2XV1bW1wiY29udGVudFwiXV1cbmBgYCJ9 -->
 <pre class="r"><code>myCorpus &lt;- tm_map(myCorpus, content_transformer(tolower))
-myCorpus[[50]][[&quot;content&quot;]]</code></pre>
+myCorpus[[36]][[&quot;content&quot;]]</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>##removing stop words</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubXlTdG9wd29yZHMgPC0gYyhzdG9wd29yZHMoa2luZCA9ICdTTUFSVCcpKVxubXlDb3JwdXMgPC0gdG1fbWFwKG15Q29ycHVzLCByZW1vdmVXb3JkcywgbXlTdG9wd29yZHMpXG5teUNvcnB1c1tbNTBdXVtbXCJjb250ZW50XCJdXVxuYGBgIn0= -->
-<pre class="r"><code>myStopwords &lt;- c(stopwords(kind = &#39;SMART&#39;))
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubXlTdG9wd29yZHMgPC0gYyhzdG9wd29yZHMoXCJpdFwiKSxzdG9wd29yZHMoXCJlblwiKSwgc3RvcHdvcmRzKFwiZGVcIiksc3RvcHdvcmRzKFwiZnJcIikpXG5teUNvcnB1cyA8LSB0bV9tYXAobXlDb3JwdXMsIHJlbW92ZVdvcmRzLCBteVN0b3B3b3Jkcylcbm15Q29ycHVzW1szNl1dW1tcImNvbnRlbnRcIl1dXG5gYGAifQ== -->
+<pre class="r"><code>myStopwords &lt;- c(stopwords(&quot;it&quot;),stopwords(&quot;en&quot;), stopwords(&quot;de&quot;),stopwords(&quot;fr&quot;))
 myCorpus &lt;- tm_map(myCorpus, removeWords, myStopwords)
-myCorpus[[50]][[&quot;content&quot;]]</code></pre>
+myCorpus[[36]][[&quot;content&quot;]]</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
@@ -353,27 +335,16 @@ myCorpus[[50]][[&quot;content&quot;]]</code></pre>
 <h2>remove extra whitespaces</h2>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubXlDb3JwdXMgPC0gdG1fbWFwKG15Q29ycHVzLCBzdHJpcFdoaXRlc3BhY2UpXG5teUNvcnB1c1tbNTBdXVtbXCJjb250ZW50XCJdXVxuYGBgIn0= -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubXlDb3JwdXMgPC0gdG1fbWFwKG15Q29ycHVzLCBzdHJpcFdoaXRlc3BhY2UpXG5teUNvcnB1c1tbMzZdXVtbXCJjb250ZW50XCJdXVxuYGBgIn0= -->
 <pre class="r"><code>myCorpus &lt;- tm_map(myCorpus, stripWhitespace)
-myCorpus[[50]][[&quot;content&quot;]]</code></pre>
+myCorpus[[36]][[&quot;content&quot;]]</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>##Conversion of vectors into character to allow tokenization</p>
+<p>##Tokenization and stemming function</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY2hhcl9jb3JwdXMgPC0gY29udmVydC50bS50by5jaGFyYWN0ZXIobXlDb3JwdXMpXG5jaGFyX2NvcnB1c1xuXG5teUNvcnB1c1tbNTBdXVtbXCJjb250ZW50XCJdXVxuYGBgIn0= -->
-<pre class="r"><code>char_corpus &lt;- convert.tm.to.character(myCorpus)
-char_corpus
-
-myCorpus[[50]][[&quot;content&quot;]]</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<p>##stemming function</p>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShodW5zcGVsbClcbnN0ZW1faHVuc3BlbGwgPC0gZnVuY3Rpb24odGVybSkge1xuICAgICMgbG9vayB1cCB0aGUgdGVybSBpbiB0aGUgZGljdGlvbmFyeVxuICAgIHN0ZW1zIDwtIGh1bnNwZWxsX3N0ZW0odGVybSlbWzFdXVxuICAgIFxuICAgIGlmIChsZW5ndGgoc3RlbXMpID09IDApIHsgIyBpZiB0aGVyZSBhcmUgbm8gc3RlbXMsIHVzZSB0aGUgb3JpZ2luYWwgdGVybVxuICAgICAgICBzdGVtIDwtIHRlcm1cbiAgICB9IGVsc2UgeyAjIGlmIHRoZXJlIGFyZSBtdWx0aXBsZSBzdGVtcywgdXNlIHRoZSBsYXN0IG9uZVxuICAgICAgICBzdGVtIDwtIHN0ZW1zW1tsZW5ndGgoc3RlbXMpXV1cbiAgICB9XG4gICAgcmV0dXJuKHN0ZW0pXG59XG4jY291bnRpbmcgd29yZCBvY2NvdXJlbmN5IGNvcnJlcHNvbmRpbmcgdG8gYSBzdGVhbVxuYWxsd29yZHMgPC0gaHVuc3BlbGxfcGFyc2UoY2hhcl9jb3JwdXMsIGZvcm1hdCA9IFwidGV4dFwiKVxuc3RlbXMgPC0gdW5saXN0KHN0ZW1faHVuc3BlbGwodW5saXN0KGFsbHdvcmRzKSkpXG53b3JkcyA8LSBzb3J0KHRhYmxlKHN0ZW1zKSwgZGVjcmVhc2luZyA9IFRSVUUpXG5wcmludChoZWFkKHdvcmRzLCAzMCkpXG5cbiNSZW1vdmluZyBzdG9wIHdvcmRzIGZyb20gYWxsIHRoZSB3b3Jkc1xuZGZfd29yZHMgPC0gYXMuZGF0YS5mcmFtZSh3b3JkcylcbmRmX3dvcmRzJHN0ZW1zIDwtIGFzLmNoYXJhY3RlcihkZl93b3JkcyRzdGVtcylcbnN0b3BzIDwtIGRmX3dvcmRzJHN0ZW1zICVpbiUgc3RvcHdvcmRzKGtpbmQgPSBcImVuXCIpXG53Y2RhdGEgPC0gaGVhZChkZl93b3Jkc1shc3RvcHMsXSwgMTUwKVxucHJpbnQod2NkYXRhLCBtYXggPSA0MClcblxuI1Bsb3QgdGhlIGNsb3VkIG9mIHdvcmRzIGJhc2VkIG9uIHRoZSBmcmVxdWVuY3lcbmluc3RhbGwucGFja2FnZXMoXCJ3b3JkY2xvdWRcIilcbmxpYnJhcnkod29yZGNsb3VkMilcbm5hbWVzKHdjZGF0YSkgPC0gYyhcIndvcmRcIiwgXCJmcmVxXCIpXG53Y2RhdGEkZnJlcSA8LSAod2NkYXRhJGZyZXEpXigyLzMpXG53b3JkY2xvdWQyKHdjZGF0YSlcbmBgYCJ9 -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShodW5zcGVsbClcbnN0ZW1faHVuc3BlbGwgPC0gZnVuY3Rpb24odGVybSkge1xuICAgICMgbG9vayB1cCB0aGUgdGVybSBpbiB0aGUgZGljdGlvbmFyeVxuICAgIHN0ZW1zIDwtIGh1bnNwZWxsX3N0ZW0odGVybSlbWzFdXVxuICAgIFxuICAgIGlmIChsZW5ndGgoc3RlbXMpID09IDApIHsgIyBpZiB0aGVyZSBhcmUgbm8gc3RlbXMsIHVzZSB0aGUgb3JpZ2luYWwgdGVybVxuICAgICAgICBzdGVtIDwtIHRlcm1cbiAgICB9IGVsc2UgeyAjIGlmIHRoZXJlIGFyZSBtdWx0aXBsZSBzdGVtcywgdXNlIHRoZSBsYXN0IG9uZVxuICAgICAgICBzdGVtIDwtIHN0ZW1zW1tsZW5ndGgoc3RlbXMpXV1cbiAgICB9XG4gICAgcmV0dXJuKHN0ZW0pXG59XG4gICAgXG4jQ2hhcmFjdGVyQ29ycHVzIDwtIGNvbnZlcnQudG0udG8uY2hhcmFjdGVyKG15Q29ycHVzKVxubXlDb3JwdXMlPiUgdGV4dF90b2tlbnMoc3RlbW1lcj1zdGVtX2h1bnNwZWxsKVxuZHRtPC1UZXJtRG9jdW1lbnRNYXRyaXgobXlDb3JwdXMpXG5pbnNwZWN0KGR0bSlcbmBgYCJ9 -->
 <pre class="r"><code>library(hunspell)
 stem_hunspell &lt;- function(term) {
     # look up the term in the dictionary
@@ -386,10 +357,19 @@ stem_hunspell &lt;- function(term) {
     }
     return(stem)
 }
-#counting word occourency correpsonding to a steam
-allwords &lt;- hunspell_parse(char_corpus, format = &quot;text&quot;)
-stems &lt;- unlist(stem_hunspell(unlist(allwords)))
-words &lt;- sort(table(stems), decreasing = TRUE)
+    
+#CharacterCorpus &lt;- convert.tm.to.character(myCorpus)
+myCorpus%&gt;% text_tokens(stemmer=stem_hunspell)
+dtm&lt;-TermDocumentMatrix(myCorpus)
+inspect(dtm)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>##stemming function</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxud29yZHMgPC0gc29ydCh0YWJsZShsZXR0ZXJfdGVybXMpLCBkZWNyZWFzaW5nID0gVFJVRSlcbnByaW50KGhlYWQod29yZHMsIDMwKSlcblxuI1JlbW92aW5nIHN0b3Agd29yZHMgZnJvbSBhbGwgdGhlIHdvcmRzXG5kZl93b3JkcyA8LSBhcy5kYXRhLmZyYW1lKHdvcmRzKVxuZGZfd29yZHMkc3RlbXMgPC0gYXMuY2hhcmFjdGVyKGRmX3dvcmRzJHN0ZW1zKVxuc3RvcHMgPC0gZGZfd29yZHMkc3RlbXMgJWluJSBzdG9wd29yZHMoa2luZCA9IFwiZW5cIilcbndjZGF0YSA8LSBoZWFkKGRmX3dvcmRzWyFzdG9wcyxdLCAxNTApXG5wcmludCh3Y2RhdGEsIG1heCA9IDQwKVxuXG5gYGAifQ== -->
+<pre class="r"><code>words &lt;- sort(table(letter_terms), decreasing = TRUE)
 print(head(words, 30))
 
 #Removing stop words from all the words
@@ -398,13 +378,7 @@ df_words$stems &lt;- as.character(df_words$stems)
 stops &lt;- df_words$stems %in% stopwords(kind = &quot;en&quot;)
 wcdata &lt;- head(df_words[!stops,], 150)
 print(wcdata, max = 40)
-
-#Plot the cloud of words based on the frequency
-install.packages(&quot;wordcloud&quot;)
-library(wordcloud2)
-names(wcdata) &lt;- c(&quot;word&quot;, &quot;freq&quot;)
-wcdata$freq &lt;- (wcdata$freq)^(2/3)
-wordcloud2(wcdata)</code></pre>
+</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
@@ -431,7 +405,7 @@ wordcloud(words = d$word, freq = d$freq, min.freq = 1,
 <!-- rnb-text-end -->
 </div>
 
-<div id="rmd-source-code">LS0tDQp0aXRsZTogIlIgTm90ZWJvb2siDQpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sNCi0tLQ0KIyNTdGVwIG8gbGlicmFyeSBhbmQgZGVwZW5kZW5jeQ0KYGBge3J9DQojIGxvYWRpbmcgdGhlIHJlcXVpcmVkIHBhY2thZ2VzDQppbnN0YWxsLnBhY2thZ2VzKCJkcGx5ciIpDQppbnN0YWxsLnBhY2thZ2VzKCJ0aWR5ciIpDQppbnN0YWxsLnBhY2thZ2VzKCJ0ZXh0cmVnIikNCmluc3RhbGwucGFja2FnZXMoInRtIikNCmluc3RhbGwucGFja2FnZXMoIndyaXRleGwiKQ0KaW5zdGFsbC5wYWNrYWdlcygiY29ycHVzIikNCmluc3RhbGwucGFja2FnZXMoImUxMDcxIikNCmluc3RhbGwucGFja2FnZXMoIndvcmRjbG91ZDIiKQ0KaW5zdGFsbC5wYWNrYWdlcygiY2FyZXQiKQ0KaW5zdGFsbC5wYWNrYWdlcygidGlkeXRleHQiKQ0KaW5zdGFsbC5wYWNrYWdlcygidG9rZW5pemVycyIpDQppbnN0YWxsLnBhY2thZ2VzKCJ0ZXh0Y2xlYW4iKQ0KDQpsaWJyYXJ5KHRleHRjbGVhbikNCmxpYnJhcnkoZHBseXIpDQpsaWJyYXJ5KHRpZHlyKQ0KbGlicmFyeSh0ZXh0cmVnKQ0KbGlicmFyeSh0bSkNCmxpYnJhcnkod3JpdGV4bCkNCmxpYnJhcnkoY29ycHVzKQ0KbGlicmFyeShlMTA3MSkNCmxpYnJhcnkod29yZGNsb3VkMikNCmxpYnJhcnkoY2FyZXQpDQpsaWJyYXJ5KHRpZHl0ZXh0KQ0KbGlicmFyeSh0b2tlbml6ZXJzKQ0KYGBgDQoNCiMjU3RlcCAxIExvYWQgRGF0YQ0KYGBge3J9DQpkZiA8LSByZWFkLmNzdihmaWxlID0gIkM6L1VzZXJzL1VzZXIvRG9jdW1lbnRzL1VOSVRTL01hZ2lzdHJhbGUvUHJpbW8gQW5uby8xwrBzZW1lc3RyZS9NYWNoaW5lIExlYXJuaW5nL1N2ZXZvTGV0dGVycy9jYXJ0ZWdnaW9zdmV2bzMuY3N2Iiwgc2VwID0gIjsiLCBoZWFkZXIgPSBUUlVFKQ0KaGVhZChkZikNCmRpbWVuc2lvbnMgPC0gZGltKGRmKQ0Kcm93cyA8LSBkaW1lbnNpb25zWzFdDQpjb2x1bW5zIDwtIGRpbWVuc2lvbnNbMl0NCmBgYA0KIyNTdGVwIDIgcHJlIHByb2Nlc3NpbmcNCmBgYHtyfQ0KTGV0dGVyQ29ycHVzU2VjdGlvbiA8LSB0YWJsZShkZlssMl0pDQpTZWN0aW9ucyA8LSBkaW0oTGV0dGVyQ29ycHVzU2VjdGlvbikNClNlY3Rpb25zDQpTZWN0aW9uTmFtZXMgPC1sZXZlbHMoZmFjdG9yKGRmJGNvcnB1cykpDQpTZWN0aW9uTmFtZXMNCmBgYA0KIyNVcGRhdHlpbmcgYW4gZWdsaXNoIGxpc3QgdG8gY29tcHV0ZSB0aGUgc3RlbW1pbmcNCg0KDQojI05ldyBzZWN0aW9uIGluIHdoaWNoIHdlIHBlcmZvcm0gcHJlcHJvY2Vzc2luZw0KYGBge3J9DQoNCmRmJGRhdGUgPC0gZ3N1YigiMDAiLCIwMSIsZGYkZGF0ZSkjZm9ydW5rbm93biBtb250aCBvciB5ZWFyIHdlIGFzc3VtZSBpdCBpcyB0aGUgZmlyc3QgbW9udGggYW5kIGZpcnN0IHllYXINCmRmJGRhdGUNCg0KI2NvbnZlcnRpbmcgdGhlIGRhdGEgYXMgYSBjaGFyYWN0ZXIgaW50byBhIERhdGUgb2JqZWN0IA0KZGYkZGF0ZSA8LSBhcy5EYXRlKGRmJGRhdGUsdHJ5Rm9ybWF0cyA9IGMoIiVkLSVtLSVZIiwgIiVkLyVtLyVZIikpDQojIHZlcmlmeWluZw0KZGYkZGF0ZQ0KDQpgYGANCg0KIyNPTEQgdGhpbmdzDQpgYGB7cn0NCmRvY3VtZW50c19sZW5ndGggPC0gc2FwcGx5KHN0cnNwbGl0KGRmX2NsZWFuJHRleHQsICIgIiksIGxlbmd0aCkNCmRvY3VtZW50c19sZW5ndGgNCg0KZG9jdW1lbnRzX2xlbmd0aCAlPiUgDQogICBzdW1tYXJ5KCkNCmBgYA0KDQojI2NyZWF0ZSBhIGNvcHVzIGNvbXBvc2VkIG9ubHkgYnkgdGhlIHRleHQgZGF0YQ0KYGBge3J9DQpteUNvcnB1cyA8LSBWQ29ycHVzKFZlY3RvclNvdXJjZShkZiR0ZXh0KSkNCm15Q29ycHVzW1s1MF1dW1siY29udGVudCJdXQ0KDQpgYGANCiMjcmVtb3ZpbmcgTnVtYmVycw0KYGBge3J9DQpteUNvcnB1cyA8LSB0bV9tYXAobXlDb3JwdXMsY29udGVudF90cmFuc2Zvcm1lcihyZW1vdmVOdW1iZXJzKSkNCm15Q29ycHVzW1s1MF1dW1siY29udGVudCJdXQ0KYGBgDQojI3JlbW92aW5nIFB1bmN0dWF0aW9ucw0KYGBge3J9DQpyZW1vdmVOdW1QdW5jdCA8LSBmdW5jdGlvbih4KSBnc3ViKCIoWzw+XSl8W1s6cHVuY3Q6XV0iLCAiICIsIHgpDQpteUNvcnB1cyA8LSB0bV9tYXAobXlDb3JwdXMsIGNvbnRlbnRfdHJhbnNmb3JtZXIocmVtb3ZlTnVtUHVuY3QpKQ0KbXlDb3JwdXNbWzUwXV1bWyJjb250ZW50Il1dDQpgYGANCiMjY29udmVydGdpbiB0byBsb3dlciBjYXNlDQpgYGB7cn0NCm15Q29ycHVzIDwtIHRtX21hcChteUNvcnB1cywgY29udGVudF90cmFuc2Zvcm1lcih0b2xvd2VyKSkNCm15Q29ycHVzW1s1MF1dW1siY29udGVudCJdXQ0KYGBgDQojI3JlbW92aW5nIHN0b3Agd29yZHMNCmBgYHtyfQ0KbXlTdG9wd29yZHMgPC0gYyhzdG9wd29yZHMoa2luZCA9ICdTTUFSVCcpKQ0KbXlDb3JwdXMgPC0gdG1fbWFwKG15Q29ycHVzLCByZW1vdmVXb3JkcywgbXlTdG9wd29yZHMpDQpteUNvcnB1c1tbNTBdXVtbImNvbnRlbnQiXV0NCmBgYA0KIyMgcmVtb3ZlIGV4dHJhIHdoaXRlc3BhY2VzDQpgYGB7cn0NCm15Q29ycHVzIDwtIHRtX21hcChteUNvcnB1cywgc3RyaXBXaGl0ZXNwYWNlKQ0KbXlDb3JwdXNbWzUwXV1bWyJjb250ZW50Il1dDQpgYGANCg0KIyNDb252ZXJzaW9uIG9mIHZlY3RvcnMgaW50byBjaGFyYWN0ZXIgdG8gYWxsb3cgdG9rZW5pemF0aW9uDQpgYGB7cn0NCmNoYXJfY29ycHVzIDwtIGNvbnZlcnQudG0udG8uY2hhcmFjdGVyKG15Q29ycHVzKQ0KY2hhcl9jb3JwdXMNCg0KbXlDb3JwdXNbWzUwXV1bWyJjb250ZW50Il1dDQpgYGANCiMjc3RlbW1pbmcgZnVuY3Rpb24NCmBgYHtyfQ0KbGlicmFyeShodW5zcGVsbCkNCnN0ZW1faHVuc3BlbGwgPC0gZnVuY3Rpb24odGVybSkgew0KICAgICMgbG9vayB1cCB0aGUgdGVybSBpbiB0aGUgZGljdGlvbmFyeQ0KICAgIHN0ZW1zIDwtIGh1bnNwZWxsX3N0ZW0odGVybSlbWzFdXQ0KICAgIA0KICAgIGlmIChsZW5ndGgoc3RlbXMpID09IDApIHsgIyBpZiB0aGVyZSBhcmUgbm8gc3RlbXMsIHVzZSB0aGUgb3JpZ2luYWwgdGVybQ0KICAgICAgICBzdGVtIDwtIHRlcm0NCiAgICB9IGVsc2UgeyAjIGlmIHRoZXJlIGFyZSBtdWx0aXBsZSBzdGVtcywgdXNlIHRoZSBsYXN0IG9uZQ0KICAgICAgICBzdGVtIDwtIHN0ZW1zW1tsZW5ndGgoc3RlbXMpXV0NCiAgICB9DQogICAgcmV0dXJuKHN0ZW0pDQp9DQojY291bnRpbmcgd29yZCBvY2NvdXJlbmN5IGNvcnJlcHNvbmRpbmcgdG8gYSBzdGVhbQ0KYWxsd29yZHMgPC0gaHVuc3BlbGxfcGFyc2UoY2hhcl9jb3JwdXMsIGZvcm1hdCA9ICJ0ZXh0IikNCnN0ZW1zIDwtIHVubGlzdChzdGVtX2h1bnNwZWxsKHVubGlzdChhbGx3b3JkcykpKQ0Kd29yZHMgPC0gc29ydCh0YWJsZShzdGVtcyksIGRlY3JlYXNpbmcgPSBUUlVFKQ0KcHJpbnQoaGVhZCh3b3JkcywgMzApKQ0KDQojUmVtb3Zpbmcgc3RvcCB3b3JkcyBmcm9tIGFsbCB0aGUgd29yZHMNCmRmX3dvcmRzIDwtIGFzLmRhdGEuZnJhbWUod29yZHMpDQpkZl93b3JkcyRzdGVtcyA8LSBhcy5jaGFyYWN0ZXIoZGZfd29yZHMkc3RlbXMpDQpzdG9wcyA8LSBkZl93b3JkcyRzdGVtcyAlaW4lIHN0b3B3b3JkcyhraW5kID0gImVuIikNCndjZGF0YSA8LSBoZWFkKGRmX3dvcmRzWyFzdG9wcyxdLCAxNTApDQpwcmludCh3Y2RhdGEsIG1heCA9IDQwKQ0KDQojUGxvdCB0aGUgY2xvdWQgb2Ygd29yZHMgYmFzZWQgb24gdGhlIGZyZXF1ZW5jeQ0KaW5zdGFsbC5wYWNrYWdlcygid29yZGNsb3VkIikNCmxpYnJhcnkod29yZGNsb3VkMikNCm5hbWVzKHdjZGF0YSkgPC0gYygid29yZCIsICJmcmVxIikNCndjZGF0YSRmcmVxIDwtICh3Y2RhdGEkZnJlcSleKDIvMykNCndvcmRjbG91ZDIod2NkYXRhKQ0KYGBgDQoNCmBgYHtyfQ0KZHRtIDwtIFRlcm1Eb2N1bWVudE1hdHJpeChteUNvcnB1cykNCm0gPC0gYXMubWF0cml4KGR0bSkNCnYgPC0gc29ydChyb3dTdW1zKG0pLGRlY3JlYXNpbmc9VFJVRSkNCmQgPC0gZGF0YS5mcmFtZSh3b3JkID0gbmFtZXModiksZnJlcT12KQ0KaGVhZChkLCAxMCkNCmluc3RhbGwucGFja2FnZXMoIndvcmRjbG91ZCIpDQpsaWJyYXJ5KHdvcmRjbG91ZCkNCnNldC5zZWVkKDEyMzQpDQp3b3JkY2xvdWQod29yZHMgPSBkJHdvcmQsIGZyZXEgPSBkJGZyZXEsIG1pbi5mcmVxID0gMSwNCiAgICAgICAgICBtYXgud29yZHM9MjAwLCByYW5kb20ub3JkZXI9RkFMU0UsIHJvdC5wZXI9MC4zNSwgDQogICAgICAgICAgY29sb3JzPWJyZXdlci5wYWwoOCwgIkRhcmsyIikpDQpgYGANCkFkZCBhIG5ldyBjaHVuayBieSBjbGlja2luZyB0aGUgKkluc2VydCBDaHVuayogYnV0dG9uIG9uIHRoZSB0b29sYmFyIG9yIGJ5IHByZXNzaW5nICpDdHJsK0FsdCtJKi4NCg0KV2hlbiB5b3Ugc2F2ZSB0aGUgbm90ZWJvb2ssIGFuIEhUTUwgZmlsZSBjb250YWluaW5nIHRoZSBjb2RlIGFuZCBvdXRwdXQgd2lsbCBiZSBzYXZlZCBhbG9uZ3NpZGUgaXQgKGNsaWNrIHRoZSAqUHJldmlldyogYnV0dG9uIG9yIHByZXNzICpDdHJsK1NoaWZ0K0sqIHRvIHByZXZpZXcgdGhlIEhUTUwgZmlsZSkuDQoNClRoZSBwcmV2aWV3IHNob3dzIHlvdSBhIHJlbmRlcmVkIEhUTUwgY29weSBvZiB0aGUgY29udGVudHMgb2YgdGhlIGVkaXRvci4gQ29uc2VxdWVudGx5LCB1bmxpa2UgKktuaXQqLCAqUHJldmlldyogZG9lcyBub3QgcnVuIGFueSBSIGNvZGUgY2h1bmtzLiBJbnN0ZWFkLCB0aGUgb3V0cHV0IG9mIHRoZSBjaHVuayB3aGVuIGl0IHdhcyBsYXN0IHJ1biBpbiB0aGUgZWRpdG9yIGlzIGRpc3BsYXllZC4NCg==</div>
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIlIgTm90ZWJvb2siDQpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sNCi0tLQ0KIyNTdGVwIG8gbGlicmFyeSBhbmQgZGVwZW5kZW5jeQ0KYGBge3J9DQojIGxvYWRpbmcgdGhlIHJlcXVpcmVkIHBhY2thZ2VzDQppbnN0YWxsLnBhY2thZ2VzKCJkcGx5ciIpDQppbnN0YWxsLnBhY2thZ2VzKCJ0aWR5ciIpDQppbnN0YWxsLnBhY2thZ2VzKCJ0bSIpDQppbnN0YWxsLnBhY2thZ2VzKCJjb3JwdXMiKQ0KaW5zdGFsbC5wYWNrYWdlcygiZTEwNzEiKQ0KaW5zdGFsbC5wYWNrYWdlcygid29yZGNsb3VkMiIpDQppbnN0YWxsLnBhY2thZ2VzKCJjYXJldCIpDQppbnN0YWxsLnBhY2thZ2VzKCJ0aWR5dGV4dCIpDQppbnN0YWxsLnBhY2thZ2VzKCJ0b2tlbml6ZXJzIikNCmluc3RhbGwucGFja2FnZXMoInRleHRjbGVhbiIpDQppbnN0YWxsLnBhY2thZ2VzKCJzdG9wd29yZHMiKQ0KDQpsaWJyYXJ5KHRleHRjbGVhbikNCmxpYnJhcnkoZHBseXIpDQpsaWJyYXJ5KHRpZHlyKQ0KbGlicmFyeSh0ZXh0cmVnKQ0KbGlicmFyeSh0bSkNCmxpYnJhcnkod3JpdGV4bCkNCmxpYnJhcnkoY29ycHVzKQ0KbGlicmFyeShlMTA3MSkNCmxpYnJhcnkod29yZGNsb3VkMikNCmxpYnJhcnkoY2FyZXQpDQpsaWJyYXJ5KHRpZHl0ZXh0KQ0KbGlicmFyeSh0b2tlbml6ZXJzKQ0KYGBgDQoNCiMjU3RlcCAxIExvYWQgRGF0YQ0KYGBge3J9DQpkZiA8LSByZWFkLmNzdihmaWxlID0gIkM6L1VzZXJzL1VzZXIvRG9jdW1lbnRzL1VOSVRTL01hZ2lzdHJhbGUvUHJpbW8gQW5uby8xwrBzZW1lc3RyZS9NYWNoaW5lIExlYXJuaW5nL1N2ZXZvTGV0dGVycy9jYXJ0ZWdnaW9zdmV2b1Nob3J0ODAuY3N2Iiwgc2VwID0gIjsiLCBoZWFkZXIgPSBUUlVFKQ0KaGVhZChkZikNCmRpbWVuc2lvbnMgPC0gZGltKGRmKQ0Kcm93cyA8LSBkaW1lbnNpb25zWzFdDQpjb2x1bW5zIDwtIGRpbWVuc2lvbnNbMl0NCmBgYA0KIyNTdGVwIDIgcHJlIHByb2Nlc3NpbmcNCmBgYHtyfQ0KTGV0dGVyQ29ycHVzU2VjdGlvbiA8LSB0YWJsZShkZlssMl0pDQpTZWN0aW9ucyA8LSBkaW0oTGV0dGVyQ29ycHVzU2VjdGlvbikNClNlY3Rpb25zDQpTZWN0aW9uTmFtZXMgPC1sZXZlbHMoZmFjdG9yKGRmJGNvcnB1cykpDQpTZWN0aW9uTmFtZXMNCmBgYA0KDQoNCiMjTmV3IHNlY3Rpb24gaW4gd2hpY2ggd2UgcGVyZm9ybSBwcmVwcm9jZXNzaW5nDQpgYGB7cn0NCg0KZGYkZGF0ZSA8LSBnc3ViKCIwMCIsIjAxIixkZiRkYXRlKSNmb3J1bmtub3duIG1vbnRoIG9yIHllYXIgd2UgYXNzdW1lIGl0IGlzIHRoZSBmaXJzdCBtb250aCBhbmQgZmlyc3QgeWVhcg0KZGYkZGF0ZQ0KDQojY29udmVydGluZyB0aGUgZGF0YSBhcyBhIGNoYXJhY3RlciBpbnRvIGEgRGF0ZSBvYmplY3QgDQpkZiRkYXRlIDwtIGFzLkRhdGUoZGYkZGF0ZSx0cnlGb3JtYXRzID0gYygiJWQtJW0tJVkiLCAiJWQvJW0vJVkiKSkNCg0KDQpgYGANCg0KDQojI2NyZWF0ZSBhIGNvcHVzIGNvbXBvc2VkIG9ubHkgYnkgdGhlIHRleHQgZGF0YQ0KYGBge3J9DQpteUNvcnB1cyA8LVZDb3JwdXMoVmVjdG9yU291cmNlKHRleHRjbGVhbjo6cmVwbGFjZV9ub25fYXNjaWkoZGYkdGV4dCkpKQ0KDQpgYGANCiMjcmVtb3ZpbmcgTnVtYmVycw0KYGBge3J9DQpteUNvcnB1cyA8LSB0bV9tYXAobXlDb3JwdXMsIHJlbW92ZU51bWJlcnMpDQpteUNvcnB1cw0KYGBgDQojI3JlbW92aW5nIFB1bmN0dWF0aW9ucw0KYGBge3J9DQpteUNvcnB1cyA8LSB0bV9tYXAobXlDb3JwdXMsIHJlbW92ZVB1bmN0dWF0aW9uKQ0KbXlDb3JwdXNbWzM2XV1bWyJjb250ZW50Il1dDQpgYGANCiMjY29udmVydGdpbiB0byBsb3dlciBjYXNlDQpgYGB7cn0NCm15Q29ycHVzIDwtIHRtX21hcChteUNvcnB1cywgY29udGVudF90cmFuc2Zvcm1lcih0b2xvd2VyKSkNCm15Q29ycHVzW1szNl1dW1siY29udGVudCJdXQ0KYGBgDQojI3JlbW92aW5nIHN0b3Agd29yZHMNCmBgYHtyfQ0KbXlTdG9wd29yZHMgPC0gYyhzdG9wd29yZHMoIml0Iiksc3RvcHdvcmRzKCJlbiIpLCBzdG9wd29yZHMoImRlIiksc3RvcHdvcmRzKCJmciIpKQ0KbXlDb3JwdXMgPC0gdG1fbWFwKG15Q29ycHVzLCByZW1vdmVXb3JkcywgbXlTdG9wd29yZHMpDQpteUNvcnB1c1tbMzZdXVtbImNvbnRlbnQiXV0NCmBgYA0KIyMgcmVtb3ZlIGV4dHJhIHdoaXRlc3BhY2VzDQpgYGB7cn0NCm15Q29ycHVzIDwtIHRtX21hcChteUNvcnB1cywgc3RyaXBXaGl0ZXNwYWNlKQ0KbXlDb3JwdXNbWzM2XV1bWyJjb250ZW50Il1dDQpgYGANCg0KDQojI1Rva2VuaXphdGlvbiBhbmQgc3RlbW1pbmcgZnVuY3Rpb24NCmBgYHtyfQ0KbGlicmFyeShodW5zcGVsbCkNCnN0ZW1faHVuc3BlbGwgPC0gZnVuY3Rpb24odGVybSkgew0KICAgICMgbG9vayB1cCB0aGUgdGVybSBpbiB0aGUgZGljdGlvbmFyeQ0KICAgIHN0ZW1zIDwtIGh1bnNwZWxsX3N0ZW0odGVybSlbWzFdXQ0KICAgIA0KICAgIGlmIChsZW5ndGgoc3RlbXMpID09IDApIHsgIyBpZiB0aGVyZSBhcmUgbm8gc3RlbXMsIHVzZSB0aGUgb3JpZ2luYWwgdGVybQ0KICAgICAgICBzdGVtIDwtIHRlcm0NCiAgICB9IGVsc2UgeyAjIGlmIHRoZXJlIGFyZSBtdWx0aXBsZSBzdGVtcywgdXNlIHRoZSBsYXN0IG9uZQ0KICAgICAgICBzdGVtIDwtIHN0ZW1zW1tsZW5ndGgoc3RlbXMpXV0NCiAgICB9DQogICAgcmV0dXJuKHN0ZW0pDQp9DQogICAgDQojQ2hhcmFjdGVyQ29ycHVzIDwtIGNvbnZlcnQudG0udG8uY2hhcmFjdGVyKG15Q29ycHVzKQ0KbXlDb3JwdXMlPiUgdGV4dF90b2tlbnMoc3RlbW1lcj1zdGVtX2h1bnNwZWxsKQ0KZHRtPC1UZXJtRG9jdW1lbnRNYXRyaXgobXlDb3JwdXMpDQppbnNwZWN0KGR0bSkNCmBgYA0KIyNzdGVtbWluZyBmdW5jdGlvbg0KYGBge3J9DQp3b3JkcyA8LSBzb3J0KHRhYmxlKGxldHRlcl90ZXJtcyksIGRlY3JlYXNpbmcgPSBUUlVFKQ0KcHJpbnQoaGVhZCh3b3JkcywgMzApKQ0KDQojUmVtb3Zpbmcgc3RvcCB3b3JkcyBmcm9tIGFsbCB0aGUgd29yZHMNCmRmX3dvcmRzIDwtIGFzLmRhdGEuZnJhbWUod29yZHMpDQpkZl93b3JkcyRzdGVtcyA8LSBhcy5jaGFyYWN0ZXIoZGZfd29yZHMkc3RlbXMpDQpzdG9wcyA8LSBkZl93b3JkcyRzdGVtcyAlaW4lIHN0b3B3b3JkcyhraW5kID0gImVuIikNCndjZGF0YSA8LSBoZWFkKGRmX3dvcmRzWyFzdG9wcyxdLCAxNTApDQpwcmludCh3Y2RhdGEsIG1heCA9IDQwKQ0KDQpgYGANCg0KYGBge3J9DQpkdG0gPC0gVGVybURvY3VtZW50TWF0cml4KG15Q29ycHVzKQ0KbSA8LSBhcy5tYXRyaXgoZHRtKQ0KdiA8LSBzb3J0KHJvd1N1bXMobSksZGVjcmVhc2luZz1UUlVFKQ0KZCA8LSBkYXRhLmZyYW1lKHdvcmQgPSBuYW1lcyh2KSxmcmVxPXYpDQpoZWFkKGQsIDEwKQ0KaW5zdGFsbC5wYWNrYWdlcygid29yZGNsb3VkIikNCmxpYnJhcnkod29yZGNsb3VkKQ0Kc2V0LnNlZWQoMTIzNCkNCndvcmRjbG91ZCh3b3JkcyA9IGQkd29yZCwgZnJlcSA9IGQkZnJlcSwgbWluLmZyZXEgPSAxLA0KICAgICAgICAgIG1heC53b3Jkcz0yMDAsIHJhbmRvbS5vcmRlcj1GQUxTRSwgcm90LnBlcj0wLjM1LCANCiAgICAgICAgICBjb2xvcnM9YnJld2VyLnBhbCg4LCAiRGFyazIiKSkNCmBgYA0KQWRkIGEgbmV3IGNodW5rIGJ5IGNsaWNraW5nIHRoZSAqSW5zZXJ0IENodW5rKiBidXR0b24gb24gdGhlIHRvb2xiYXIgb3IgYnkgcHJlc3NpbmcgKkN0cmwrQWx0K0kqLg0KDQpXaGVuIHlvdSBzYXZlIHRoZSBub3RlYm9vaywgYW4gSFRNTCBmaWxlIGNvbnRhaW5pbmcgdGhlIGNvZGUgYW5kIG91dHB1dCB3aWxsIGJlIHNhdmVkIGFsb25nc2lkZSBpdCAoY2xpY2sgdGhlICpQcmV2aWV3KiBidXR0b24gb3IgcHJlc3MgKkN0cmwrU2hpZnQrSyogdG8gcHJldmlldyB0aGUgSFRNTCBmaWxlKS4NCg0KVGhlIHByZXZpZXcgc2hvd3MgeW91IGEgcmVuZGVyZWQgSFRNTCBjb3B5IG9mIHRoZSBjb250ZW50cyBvZiB0aGUgZWRpdG9yLiBDb25zZXF1ZW50bHksIHVubGlrZSAqS25pdCosICpQcmV2aWV3KiBkb2VzIG5vdCBydW4gYW55IFIgY29kZSBjaHVua3MuIEluc3RlYWQsIHRoZSBvdXRwdXQgb2YgdGhlIGNodW5rIHdoZW4gaXQgd2FzIGxhc3QgcnVuIGluIHRoZSBlZGl0b3IgaXMgZGlzcGxheWVkLg0K</div>
 
 
 
