@@ -131,10 +131,109 @@ wordcloud(words = d$word, freq = d$freq, min.freq = 1,
 ```
 ##Remove words thaht occur only in less 5 dcuments and the common words which appears on more than 90% of all documents
 ```{r}
-word_freq <- findFreqTerms(dtm,lowfreq = 5, highfreq = ncol(dtm)*0.9)
-dtm <-dtm[word_freq,]
-dtm
+word_freq <- findFreqTerms(dtm,lowfreq = 5, highfreq = nrow(dtm)*0.9)
+dtm <-dtm[word_freq]
+inspect(dtm)
 ```
+##Topic modelling with LDA LAtent Dirichlet Allocation
+```{r}
+install.packages("textmineR")
+library(textmineR)
+dtm_lda <- Matrix::Matrix(as.matrix(dtm), sparse = T)
+
+set.seed(123)
+lda_news <- FitLdaModel(dtm = dtm_lda, 
+                        k = 3, 
+                        iterations = 5000,
+                        burnin = 4000, 
+                        calc_coherence = T
+                        )
+```
+##Below are some important attribute acquired from the LDA Model:
+
+phi : Posterior per-topic-per-word probabilities
+theta : Posterior per-document-per-topic probabilities
+alpha : Prior per-document-per-topic probabilities
+beta : Prior per-document-per-topic probabilities
+coherence : The probabilistic coherence of each topic
+
+If a term has a high value of theta, it has a high probability of that term being generated from that topic. This also indicates that the term has a high association toward a certain topic.
+```{r}
+lda_news$phi%>% rowSums()
+GetTopTerms(lda_news$phi,3) 
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
 
 When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
