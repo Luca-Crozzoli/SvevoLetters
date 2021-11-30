@@ -62,7 +62,7 @@ df$date <- as.Date(df$date,tryFormats = c("%d-%m-%Y", "%d/%m/%Y"))
 ```
 
 
-##create a copus composed only by the text data
+##create a copus composed only by the text data removing non ascii characters
 ```{r}
 myCorpus <-VCorpus(VectorSource(textclean::replace_non_ascii(df$text)))
 
@@ -77,12 +77,12 @@ myCorpus
 myCorpus <- tm_map(myCorpus, removePunctuation)
 myCorpus[[36]][["content"]]
 ```
-##convertgin to lower case
+##converting to lower case
 ```{r}
 myCorpus <- tm_map(myCorpus, content_transformer(tolower))
 myCorpus[[36]][["content"]]
 ```
-##removing stop words
+##removing stop words (italian french endglish and german)
 ```{r}
 myStopwords <- c(stopwords("it"),stopwords("en"), stopwords("de"),stopwords("fr"))
 myCorpus <- tm_map(myCorpus, removeWords, myStopwords)
@@ -95,7 +95,7 @@ myCorpus[[36]][["content"]]
 ```
 
 
-##Tokenization and stemming function
+##Tokenization into words and stemming function
 ```{r}
 library(hunspell)
 stem_hunspell <- function(term) {
@@ -109,19 +109,14 @@ stem_hunspell <- function(term) {
     }
     return(stem)
 }
-    
-#CharacterCorpus <- convert.tm.to.character(myCorpus)
 myCorpus%>% text_tokens(stemmer=stem_hunspell)
+
+```
+
+##Creation fo the document term matrix and computing the cloud words to see the more frequent word in all the letters
+```{r}
 dtm<-TermDocumentMatrix(myCorpus)
 inspect(dtm)
-```
-##stemming function
-```{r}
-
-
-```
-
-```{r}
 m <- as.matrix(dtm)
 v <- sort(rowSums(m),decreasing=TRUE)
 d <- data.frame(word = names(v),freq=v)
