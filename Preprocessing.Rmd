@@ -110,6 +110,7 @@ stem_hunspell <- function(term) {
     return(stem)
 }
 myCorpus%>% text_tokens(stemmer=stem_hunspell)
+myCorpus
 
 ```
 
@@ -127,6 +128,12 @@ set.seed(1234)
 wordcloud(words = d$word, freq = d$freq, min.freq = 1,
           max.words=200, random.order=FALSE, rot.per=0.35, 
           colors=brewer.pal(8, "Dark2"))
+```
+##Remove words thaht occur only in less 5 dcuments and the common words which appears on more than 90% of all documents
+```{r}
+word_freq <- findFreqTerms(dtm,lowfreq = 5, highfreq = ncol(dtm)*0.9)
+dtm <-dtm[word_freq,]
+dtm
 ```
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
 
