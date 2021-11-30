@@ -117,20 +117,11 @@ inspect(dtm)
 ```
 ##stemming function
 ```{r}
-words <- sort(table(letter_terms), decreasing = TRUE)
-print(head(words, 30))
 
-#Removing stop words from all the words
-df_words <- as.data.frame(words)
-df_words$stems <- as.character(df_words$stems)
-stops <- df_words$stems %in% stopwords(kind = "en")
-wcdata <- head(df_words[!stops,], 150)
-print(wcdata, max = 40)
 
 ```
 
 ```{r}
-dtm <- TermDocumentMatrix(myCorpus)
 m <- as.matrix(dtm)
 v <- sort(rowSums(m),decreasing=TRUE)
 d <- data.frame(word = names(v),freq=v)
