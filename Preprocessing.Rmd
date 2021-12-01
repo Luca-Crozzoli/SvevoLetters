@@ -45,7 +45,7 @@ library(tokenizers)
 
 ##Step 1 Load Data
 ```{r}
-df <- read.csv(file = "C:/Users/User/Documents/UNITS/Magistrale/Primo Anno/1°semestre/Machine Learning/SvevoLetters/carteggiosvevosvevo3.csv", sep = ";", header = TRUE)
+df <- read.csv(file = "C:/Users/User/Documents/UNITS/Magistrale/Primo Anno/1°semestre/Machine Learning/SvevoLetters/carteggiosvevo3.csv", sep = ";", header = TRUE)
 head(df)
 df$n <- df$n +1
 dimensions <- dim(df)
@@ -306,7 +306,7 @@ for(k in kvalues){
   
   coherence <- c(coherence, m)
 }
-data_graph_k_C <- data.frame(Coerences,kvalues)
+data_graph_k_C <- data.frame(coherence,kvalues)
 ```
 
 ##visualizaation of coherance with teh number of topics
