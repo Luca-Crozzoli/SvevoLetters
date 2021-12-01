@@ -21,7 +21,9 @@ install.packages("tibble")
 install.packages("ggwordcloud")
 install.packages("scales")#for method date_format
 install.packages("lubridate")#fro floor_date method
+install.packages("textmineR")
 
+library(textmineR)
 library(scales)
 library(lubridate)
 library(ggwordcloud)
@@ -89,12 +91,12 @@ myCorpus
 ##removing Punctuations
 ```{r}
 myCorpus <- tm_map(myCorpus, removePunctuation)
-myCorpus[[36]][["content"]]
+#[[36]][["content"]]
 ```
 ##converting to lower case
 ```{r}
 myCorpus <- tm_map(myCorpus, content_transformer(tolower))
-myCorpus[[36]][["content"]]
+#myCorpus[[36]][["content"]]
 ```
 ##removing stop words (italian french endglish and german)
 ```{r}
@@ -105,7 +107,7 @@ myCorpus[[36]][["content"]]
 ## remove extra whitespaces
 ```{r}
 myCorpus<- tm_map(myCorpus, stripWhitespace)
-myCorpus[[36]][["content"]]
+#myCorpus[[36]][["content"]]
 ```
 
 
@@ -152,8 +154,6 @@ inspect(dtm)
 
 ##Topic modelling with LDA LAtent Dirichlet Allocation
 ```{r}
-install.packages("textmineR")
-library(textmineR)
 dtm_lda <- Matrix::Matrix(as.matrix(dtm), sparse = T)
 
 set.seed(123)
@@ -290,10 +290,39 @@ df_topic_date%>%ggplot(aes(time, theta, fill = topic, color = topic)) +
    labs(x = NULL, y = expression(theta), color = NULL, 
         title = "Topic Proportions Over Time on daily Interval")
 ```
+##Evaluation fo the LDA model to find the optimal number of arguments, preparing the data frame related with coherenc and number of topics
+```{r}
 
+coherence =c()
+kvalues = seq(10,100,by=10)
+for(k in kvalues){
+  m <- FitLdaModel(dtm =dtm_lda,
+                        k = k, 
+                        iterations = 500,
+                        burnin = 400, 
+                        calc_coherence = T
+                        )
+  m <- mean(m$coherence)
+  
+  coherence <- c(coherence, m)
+}
+data_graph_k_C <- data.frame(Coerences,kvalues)
+```
 
+##visualizaation of coherance with teh number of topics
+```{r}
+data_graph_k_C%>%mutate(max_k = which(coherence == max(coherence)) * 10) %>% 
+   ggplot(aes(kvalues, coherence)) +
+   geom_vline(aes(xintercept = max_k), alpha = 0.5, lty = "dashed") +
+   geom_line(color = "skyblue4") +
+   geom_point() +
+   scale_x_continuous(breaks = seq(0, 200, 20)) +
+   labs(x = "Number of Topics", y = "Coherence", title = "Coherence Score over Number of Topics") +
+   theme_minimal() +
+   theme(panel.grid.minor = element_blank())
+   
 
-
+```
 
 
 
