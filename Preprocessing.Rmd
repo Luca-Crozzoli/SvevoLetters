@@ -232,7 +232,7 @@ letters_doc_topic %>%
   view()
 ```
 
-#most related document for topic 3
+#most related document for topic 3 we use the theta parameter fo the lda
 ```{r}
 letters_doc_topic <- lda_news$theta %>% 
    as.data.frame() %>% 
@@ -250,6 +250,40 @@ letters_doc_topic %>%
   view()
 ```
 
+##Topic proportion over the time
+```{r}
+install.packages("scales")#for method date_format
+library(scales)
+#we will see the range of date 
+range(df$date)
+
+#we plot the topic proportion over the time
+letters_doc_topic %>% 
+   left_join(   df %>% 
+                mutate(n = as.character(n)) %>% 
+                select(n,date), 
+                by = c("id" = "n")) %>% 
+   select(id, everything()) %>% 
+   pivot_longer(c(t_1, t_2, t_3), names_to = "topic", values_to = "theta") %>% 
+   mutate(topic = case_when( topic == "t_1" ~ "TOPIC1",
+                             topic == "t_2" ~ "TOPIC2",
+                             TRUE ~ "TOPIC3") %>% 
+          factor(levels = c("TOPIC2", "TOPIC1", "TOPIC3")),
+          time = floor_date(date, unit = "day")) %>% 
+   group_by(time, topic) %>% 
+   summarise(theta = mean(theta)) %>% 
+   ggplot(aes(time, theta, fill = topic, color = topic)) +
+   geom_line() +
+   geom_point(show.legend = F) +
+   theme_minimal() +
+   theme(legend.position = "top") +
+   scale_x_date(date_breaks = "1 day", 
+                labels = date_format(format = "%d\n%m")) +
+   scale_y_continuous() +
+   scale_fill_manual(values = c("firebrick", "orange", "dodgerblue3")) +
+   labs(x = NULL, y = expression(theta), color = NULL, 
+        title = "Topic Proportions Over Time on Weekly Interval")
+```
 
 
 
@@ -257,8 +291,45 @@ letters_doc_topic %>%
 
 
 
+##Topic proportion in sender and receiver
+```{r}
+install.packages("scales")#for method date_format
+library(scales)
+#we will see the range of date 
+range(df$date)
+
+#Table with id_ t1,t2,t3
+sender_receiver <-letters_doc_topic %>% 
+   left_join( df %>% 
+                mutate(n = as.character(n)) %>% 
+                select(n,sender,recipient), 
+                by = c("id" = "n")) %>% 
+   select(id, everything())
+
+view(sender_receiver)
+
+sender_receiver%>%pivot_longer(c(t_1, t_2, t_3), names_to = "topic", values_to = "theta") %>% 
+   mutate(topic = case_when( topic == "t_1" ~ "TOPIC1",
+                             topic == "t_2" ~ "TOPIC2",
+                             TRUE ~ "TOPIC3") %>% 
+          factor(levels = c("TOPIC2", "TOPIC1", "TOPIC3")),
+          Senders = sender,
+          Receivers = recipient )%>%
+  group_by(sender,recipient,topic)
 
 
+plot1 <-ggplot(sender_receiver, aes(x=sender, y=recipient)) + 
+  geom_point(aes(size=t_1, color="red"))
+print(plot1)
+
+plot2 <-ggplot(sender_receiver, aes(x=sender, y=recipient)) + 
+  geom_point(aes(size=t_2, color="green"))
+print(plot2)
+
+plot3 <-ggplot(sender_receiver, aes(x=sender, y=recipient)) + 
+  geom_point(aes(size=t_3, color="blue"))
+print(plot3)
+```
 
 
 
