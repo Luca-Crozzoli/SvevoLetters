@@ -19,10 +19,10 @@ install.packages("stopwords")
 install.packages("purrr")
 install.packages("tibble")
 install.packages("ggwordcloud")
+
 library(ggwordcloud)
 library(tibble)
 library(purrr)
-
 library(textclean)
 library(dplyr)
 library(tidyr)
