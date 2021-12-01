@@ -19,7 +19,11 @@ install.packages("stopwords")
 install.packages("purrr")
 install.packages("tibble")
 install.packages("ggwordcloud")
+install.packages("scales")#for method date_format
+install.packages("lubridate")#fro floor_date method
 
+library(scales)
+library(lubridate)
 library(ggwordcloud)
 library(tibble)
 library(purrr)
@@ -252,8 +256,6 @@ letters_doc_topic %>%
 
 ##Topic proportion over the time
 ```{r}
-install.packages("scales")#for method date_format
-library(scales)
 #we will see the range of date 
 range(df$date)
 
