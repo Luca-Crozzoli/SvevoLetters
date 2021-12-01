@@ -41,6 +41,7 @@ library(tokenizers)
 ```{r}
 df <- read.csv(file = "C:/Users/User/Documents/UNITS/Magistrale/Primo Anno/1°semestre/Machine Learning/SvevoLetters/carteggiosvevoShort80.csv", sep = ";", header = TRUE)
 head(df)
+df$n <- df$n +1
 dimensions <- dim(df)
 rows <- dimensions[1]
 columns <- dimensions[2]
@@ -70,12 +71,15 @@ df$date <- as.Date(df$date,tryFormats = c("%d-%m-%Y", "%d/%m/%Y"))
 
 ##create a copus composed only by the text data removing non ascii characters
 ```{r}
+textclean::replace_non_ascii(df$text)
+myCorpus2 <- as_corpus_frame(df)
+
 myCorpus <-VCorpus(VectorSource(textclean::replace_non_ascii(df$text)))
 
 ```
 ##removing Numbers
 ```{r}
-myCorpus <- tm_map(myCorpus, removeNumbers)
+myCorpus<- tm_map(myCorpus, removeNumbers)
 myCorpus
 ```
 ##removing Punctuations
@@ -96,7 +100,7 @@ myCorpus[[36]][["content"]]
 ```
 ## remove extra whitespaces
 ```{r}
-myCorpus <- tm_map(myCorpus, stripWhitespace)
+myCorpus<- tm_map(myCorpus, stripWhitespace)
 myCorpus[[36]][["content"]]
 ```
 
@@ -191,11 +195,60 @@ letters_word_topic %>%
 
 
 ```
+##Document topic probabilities
+#most related document for topic 1
+```{r}
+letters_doc_topic <- lda_news$theta %>% 
+   as.data.frame() %>% 
+   rownames_to_column("id")
 
+lapply(letters_doc_topic$id, as.numeric)
 
+letters_doc_topic %>% 
+   arrange(desc(t_1))%>%
+   left_join(df%>%
+               mutate(n=as.character(n))%>%
+               select(n,corpus,date,sender,recipient,text), 
+               by=c("id"= "n"))%>% 
+  select(id,date,sender,recipient,t_1)%>%
+  view()
+```
 
+#most related document for topic 2
+```{r}
+letters_doc_topic <- lda_news$theta %>% 
+   as.data.frame() %>% 
+   rownames_to_column("id")
 
+lapply(letters_doc_topic$id, as.numeric)
 
+letters_doc_topic %>% 
+   arrange(desc(t_2))%>%
+   left_join(df%>%
+               mutate(n=as.character(n))%>%
+               select(n,corpus,date,sender,recipient,text), 
+               by=c("id"= "n"))%>% 
+  select(id,date,sender,recipient,t_2)%>%
+  view()
+```
+
+#most related document for topic 3
+```{r}
+letters_doc_topic <- lda_news$theta %>% 
+   as.data.frame() %>% 
+   rownames_to_column("id")
+
+lapply(letters_doc_topic$id, as.numeric)
+
+letters_doc_topic %>% 
+   arrange(desc(t_3))%>%
+   left_join(df%>%
+               mutate(n=as.character(n))%>%
+               select(n,corpus,date,sender,recipient,text), 
+               by=c("id"= "n"))%>% 
+  select(id,date,sender,recipient,t_3)%>%
+  view()
+```
 
 
 
