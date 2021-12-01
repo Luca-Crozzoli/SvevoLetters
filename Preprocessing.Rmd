@@ -258,21 +258,25 @@ library(scales)
 range(df$date)
 
 #we plot the topic proportion over the time
-letters_doc_topic %>% 
+table_topic_date <-letters_doc_topic %>% 
    left_join(   df %>% 
                 mutate(n = as.character(n)) %>% 
                 select(n,date), 
                 by = c("id" = "n")) %>% 
-   select(id, everything()) %>% 
-   pivot_longer(c(t_1, t_2, t_3), names_to = "topic", values_to = "theta") %>% 
-   mutate(topic = case_when( topic == "t_1" ~ "TOPIC1",
+   select(id, everything()) 
+   
+df_topic_date <-table_topic_date%>%pivot_longer(c(t_1, t_2, t_3), names_to = "topic", values_to = "theta") %>% 
+         mutate(topic = case_when( topic == "t_1" ~ "TOPIC1",
                              topic == "t_2" ~ "TOPIC2",
                              TRUE ~ "TOPIC3") %>% 
           factor(levels = c("TOPIC2", "TOPIC1", "TOPIC3")),
           time = floor_date(date, unit = "day")) %>% 
-   group_by(time, topic) %>% 
-   summarise(theta = mean(theta)) %>% 
-   ggplot(aes(time, theta, fill = topic, color = topic)) +
+   group_by(time, topic)%>%
+   summarise(theta = mean(theta)) 
+df_topic_date
+
+
+df_topic_date%>%ggplot(aes(time, theta, fill = topic, color = topic)) +
    geom_line() +
    geom_point(show.legend = F) +
    theme_minimal() +
@@ -282,7 +286,7 @@ letters_doc_topic %>%
    scale_y_continuous() +
    scale_fill_manual(values = c("firebrick", "orange", "dodgerblue3")) +
    labs(x = NULL, y = expression(theta), color = NULL, 
-        title = "Topic Proportions Over Time on Weekly Interval")
+        title = "Topic Proportions Over Time on daily Interval")
 ```
 
 
