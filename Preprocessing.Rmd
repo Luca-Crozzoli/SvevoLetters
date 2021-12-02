@@ -45,42 +45,43 @@ library(tokenizers)
 
 ##Step 1 Load Data
 ```{r}
-df <- read.csv(file = "C:/Users/User/Documents/UNITS/Magistrale/Primo Anno/1°semestre/Machine Learning/SvevoLetters/carteggiosvevo3.csv", sep = ";", header = TRUE)
-head(df)
-df$n <- df$n +1
-dimensions <- dim(df)
+rawData <- read.csv(file = "C:/Users/User/Documents/UNITS/Magistrale/Primo Anno/1°semestre/Machine Learning/SvevoLetters/carteggiosvevoSHORT80PULITO.csv", sep = ";", header = TRUE)
+head(rawData)
+rawData$n <- rawData$n +1
+dimensions <- dim(rawData)
 rows <- dimensions[1]
 columns <- dimensions[2]
 ```
 ##Step 2 pre processing
 ```{r}
-LetterCorpusSection <- table(df[,2])
+LetterCorpusSection <- table(rawData$corpus)
 Sections <- dim(LetterCorpusSection)
 Sections
-SectionNames <-levels(factor(df$corpus))
+SectionNames <-levels(factor(rawData$corpus))
 SectionNames
+Languages<-levels(factor(rawData$mainLanguage))
+Languages
 ```
 
 
 ##New section in which we perform preprocessing
 ```{r}
 
-df$date <- gsub("00","01",df$date)#forunknown month or year we assume it is the first month and first year
-df$date
+rawData$date <- gsub("00","01",rawData$date)#for unknown month or year we assume it is the first month and first year
+rawData$date
 
 #converting the data as a character into a Date object 
-df$date <- as.Date(df$date,tryFormats = c("%d-%m-%Y", "%d/%m/%Y"))
+rawData$date <- as.Date(rawData$date,tryFormats = c("%d-%m-%Y", "%d/%m/%Y"))
+#taking in account only the Italian letters because they are the vast majority in the dataset
+rawData<- subset(rawData, mainLanguage=="ITA")
 
 
 ```
 
 
-##create a copus composed only by the text data removing non ascii characters
+##create the corpus composed only by the text data removing non ascii characters
 ```{r}
-textclean::replace_non_ascii(df$text)
-myCorpus2 <- as_corpus_frame(df)
-
-myCorpus <-VCorpus(VectorSource(textclean::replace_non_ascii(df$text)))
+myCorpus <-VCorpus(VectorSource(textclean::replace_non_ascii(rawData$text)))
 
 ```
 ##removing Numbers
@@ -91,23 +92,23 @@ myCorpus
 ##removing Punctuations
 ```{r}
 myCorpus <- tm_map(myCorpus, removePunctuation)
-#[[36]][["content"]]
+myCorpus[[36]][["content"]]
 ```
 ##converting to lower case
 ```{r}
 myCorpus <- tm_map(myCorpus, content_transformer(tolower))
-#myCorpus[[36]][["content"]]
+myCorpus[[36]][["content"]]
 ```
 ##removing stop words (italian french endglish and german)
 ```{r}
-myStopwords <- c(stopwords("it"),stopwords("en"), stopwords("de"),stopwords("fr"))
+myStopwords <- c(stopwords("it"))
 myCorpus <- tm_map(myCorpus, removeWords, myStopwords)
 myCorpus[[36]][["content"]]
 ```
 ## remove extra whitespaces
 ```{r}
 myCorpus<- tm_map(myCorpus, stripWhitespace)
-#myCorpus[[36]][["content"]]
+myCorpus[[36]][["content"]]
 ```
 
 
@@ -118,7 +119,7 @@ stem_hunspell <- function(term) {
     # look up the term in the dictionary
     stems <- hunspell_stem(term)[[1]]
     
-    if (length(stems) == 0) { # if there are no stems, use the original term
+    if (length(stems) == 0) { #if there are no stems, use the original term
         stem <- term
     } else { # if there are multiple stems, use the last one
         stem <- stems[[length(stems)]]
@@ -130,7 +131,7 @@ myCorpus
 
 ```
 
-##Creation fo the document term matrix and computing the cloud words to see the more frequent word in all the letters
+##Creation of the document term matrix and computing the cloud words to see the more frequent word in all the letters
 ```{r}
 dtm<-DocumentTermMatrix(myCorpus)
 inspect(dtm)
@@ -152,9 +153,40 @@ dtm <-dtm[,word_freq]
 inspect(dtm)
 ```
 
-##Topic modelling with LDA LAtent Dirichlet Allocation
+##Evaluation fo the LDA model to find the optimal number of arguments, preparing the data frame related with coherenc and number of topics
 ```{r}
 dtm_lda <- Matrix::Matrix(as.matrix(dtm), sparse = T)
+coherence =c()
+kvalues = seq(10,100,by=10)
+for(k in kvalues){
+  m <- FitLdaModel(dtm =dtm_lda,
+                        k = k, 
+                        iterations = 500,
+                        burnin = 400, 
+                        calc_coherence = T
+                        )
+  m <- mean(m$coherence)
+  
+  coherence <- c(coherence, m)
+}
+data_graph_k_C <- data.frame(coherence,kvalues)
+```
+
+##visualizaation of coherance with teh number of topics
+```{r}
+data_graph_k_C%>%mutate(max_k = which(coherence == max(coherence)) * 10) %>% 
+   ggplot(aes(kvalues, coherence)) +
+   geom_vline(aes(xintercept = max_k), alpha = 0.5, lty = "dashed") +
+   geom_line(color = "skyblue4") +
+   geom_point() +
+   scale_x_continuous(breaks = seq(0, 200, 20)) +
+   labs(x = "Number of Topics", y = "Coherence", title = "Coherence Score over Number of Topics") +
+   theme_minimal() +
+   theme(panel.grid.minor = element_blank())
+
+```
+##Topic modelling with LDA LAtent Dirichlet Allocation
+```{r}
 
 set.seed(123)
 lda_news <- FitLdaModel(dtm = dtm_lda, 
@@ -202,15 +234,11 @@ letters_word_topic %>%
 ##Document topic probabilities
 #most related document for topic 1
 ```{r}
-letters_doc_topic <- lda_news$theta %>% 
-   as.data.frame() %>% 
-   rownames_to_column("id")
-
-lapply(letters_doc_topic$id, as.numeric)
+letters_doc_topic <- as.data.frame(lda_news$theta)%>%rownames_to_column("id")
 
 letters_doc_topic %>% 
    arrange(desc(t_1))%>%
-   left_join(df%>%
+   left_join(rawData%>%
                mutate(n=as.character(n))%>%
                select(n,corpus,date,sender,recipient,text), 
                by=c("id"= "n"))%>% 
@@ -228,7 +256,7 @@ lapply(letters_doc_topic$id, as.numeric)
 
 letters_doc_topic %>% 
    arrange(desc(t_2))%>%
-   left_join(df%>%
+   left_join(rawData%>%
                mutate(n=as.character(n))%>%
                select(n,corpus,date,sender,recipient,text), 
                by=c("id"= "n"))%>% 
@@ -236,7 +264,7 @@ letters_doc_topic %>%
   view()
 ```
 
-#most related document for topic 3 we use the theta parameter fo the lda
+#most related document for topic 3 we use the theta parameter from the lda
 ```{r}
 letters_doc_topic <- lda_news$theta %>% 
    as.data.frame() %>% 
@@ -246,7 +274,7 @@ lapply(letters_doc_topic$id, as.numeric)
 
 letters_doc_topic %>% 
    arrange(desc(t_3))%>%
-   left_join(df%>%
+   left_join(rawData%>%
                mutate(n=as.character(n))%>%
                select(n,corpus,date,sender,recipient,text), 
                by=c("id"= "n"))%>% 
@@ -254,14 +282,22 @@ letters_doc_topic %>%
   view()
 ```
 
+#Top topic for each document
+```{r}
+letters_doc_topic2 <- lda_news$theta %>% 
+   as.data.frame() 
+
+toptopics <- as.data.frame(cbind(id=row.names(letters_doc_topic2), topic= apply(letters_doc_topic2,1,function(x)names(letters_doc_topic2)[which(x==max(x))])))
+
+```
 ##Topic proportion over the time
 ```{r}
 #we will see the range of date 
-range(df$date)
+range(rawData$date)
 
 #we plot the topic proportion over the time
 table_topic_date <-letters_doc_topic %>% 
-   left_join(   df %>% 
+   left_join(   rawData %>% 
                 mutate(n = as.character(n)) %>% 
                 select(n,date), 
                 by = c("id" = "n")) %>% 
@@ -290,39 +326,7 @@ df_topic_date%>%ggplot(aes(time, theta, fill = topic, color = topic)) +
    labs(x = NULL, y = expression(theta), color = NULL, 
         title = "Topic Proportions Over Time on daily Interval")
 ```
-##Evaluation fo the LDA model to find the optimal number of arguments, preparing the data frame related with coherenc and number of topics
-```{r}
 
-coherence =c()
-kvalues = seq(10,100,by=10)
-for(k in kvalues){
-  m <- FitLdaModel(dtm =dtm_lda,
-                        k = k, 
-                        iterations = 500,
-                        burnin = 400, 
-                        calc_coherence = T
-                        )
-  m <- mean(m$coherence)
-  
-  coherence <- c(coherence, m)
-}
-data_graph_k_C <- data.frame(coherence,kvalues)
-```
-
-##visualizaation of coherance with teh number of topics
-```{r}
-data_graph_k_C%>%mutate(max_k = which(coherence == max(coherence)) * 10) %>% 
-   ggplot(aes(kvalues, coherence)) +
-   geom_vline(aes(xintercept = max_k), alpha = 0.5, lty = "dashed") +
-   geom_line(color = "skyblue4") +
-   geom_point() +
-   scale_x_continuous(breaks = seq(0, 200, 20)) +
-   labs(x = "Number of Topics", y = "Coherence", title = "Coherence Score over Number of Topics") +
-   theme_minimal() +
-   theme(panel.grid.minor = element_blank())
-   
-
-```
 
 
 
@@ -335,7 +339,7 @@ range(df$date)
 
 #Table with id_ t1,t2,t3
 sender_receiver <-letters_doc_topic %>% 
-   left_join( df %>% 
+   left_join(   rawData %>% 
                 mutate(n = as.character(n)) %>% 
                 select(n,sender,recipient), 
                 by = c("id" = "n")) %>% 
@@ -367,6 +371,10 @@ print(plot3)
 ```
 
 
+#Trying LDA vis
+```{r}
+
+```
 
 
 
