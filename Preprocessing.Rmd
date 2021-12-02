@@ -308,7 +308,7 @@ df_topic_date <-table_topic_date%>%pivot_longer(c(t_1, t_2, t_3), names_to = "to
                              topic == "t_2" ~ "TOPIC2",
                              TRUE ~ "TOPIC3") %>% 
           factor(levels = c("TOPIC2", "TOPIC1", "TOPIC3")),
-          time = floor_date(date, unit = "day")) %>% 
+          time = floor_date(date, unit = "month")) %>% 
    group_by(time, topic)%>%
    summarise(theta = mean(theta)) 
 df_topic_date
