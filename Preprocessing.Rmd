@@ -81,7 +81,7 @@ rawData<- subset(rawData, mainLanguage=="ITA")
 
 ##create the corpus composed only by the text data removing non ascii characters
 ```{r}
-myCorpus <-VCorpus(VectorSource(textclean::replace_non_ascii(rawData$text)))
+myCorpus <-VCorpus(VectorSource(rawData$text))
 
 ```
 ##removing Numbers
@@ -99,7 +99,7 @@ myCorpus[[36]][["content"]]
 myCorpus <- tm_map(myCorpus, content_transformer(tolower))
 myCorpus[[36]][["content"]]
 ```
-##removing stop words (italian french endglish and german)
+##removing stop words italian
 ```{r}
 myStopwords <- c(stopwords("it"))
 myCorpus <- tm_map(myCorpus, removeWords, myStopwords)
@@ -190,7 +190,7 @@ data_graph_k_C%>%mutate(max_k = which(coherence == max(coherence)) * 10) %>%
 
 set.seed(123)
 lda_news <- FitLdaModel(dtm = dtm_lda, 
-                        k = 3, 
+                        k = 30, 
                         iterations = 5000,
                         burnin = 4000, 
                         calc_coherence = T
@@ -207,14 +207,14 @@ coherence : The probabilistic coherence of each topic
 If a term has a high value of theta, it has a high probability of that term being generated from that topic. This also indicates that the term has a high association toward a certain topic.
 ```{r}
 lda_news$phi%>% rowSums()
-letters_word_topic <- GetTopTerms(lda_news$phi,30)%>% as.data.frame()%>%set_names(paste("topic",1:3))
+letters_word_topic <- GetTopTerms(lda_news$phi,30)%>% as.data.frame()%>%set_names(paste("topic",1:30))
 View(letters_word_topic)
 
 
 ```
 
 
-##grphical way
+##grphical way to reppresents topic with related words
 ```{r}
 letters_word_topic %>% 
    rownames_to_column("id") %>%
@@ -224,7 +224,7 @@ letters_word_topic %>%
    geom_text_wordcloud(seed = 123) +
    facet_wrap(~topic, scales = "free") +
    scale_alpha_continuous(range = c(0.4, 1)) +
-   scale_color_manual(values = c( "dodgerblue4", "firebrick4", "darkgreen")) +
+   #scale_color_manual(values = c( "dodgerblue4", "firebrick4", "darkgreen")) +
    theme_minimal() +
    theme(strip.background = element_rect(fill = "firebrick"),
          strip.text.x = element_text(colour = "white"))
@@ -335,7 +335,7 @@ df_topic_date%>%ggplot(aes(time, theta, fill = topic, color = topic)) +
 install.packages("scales")#for method date_format
 library(scales)
 #we will see the range of date 
-range(df$date)
+range(rawData$date)
 
 #Table with id_ t1,t2,t3
 sender_receiver <-letters_doc_topic %>% 
