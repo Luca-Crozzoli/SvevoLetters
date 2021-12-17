@@ -23,6 +23,7 @@ install.packages("scales")#for method date_format
 install.packages("lubridate")#fro floor_date method
 install.packages("textmineR")
 
+library(textstem)
 library(textmineR)
 library(scales)
 library(lubridate)
@@ -45,9 +46,8 @@ library(tokenizers)
 
 ##Step 1 Load Data
 ```{r}
-rawData <- read.csv(file = "C:/Users/User/Documents/UNITS/Magistrale/Primo Anno/1°semestre/Machine Learning/SvevoLetters/carteggiosvevoSHORT80PULITO.csv", sep = ";", header = TRUE)
+rawData <- read.csv(file = "C:/Users/User/Documents/UNITS/Magistrale/Primo Anno/1°semestre/Machine Learning/SvevoLetters/carteggiosvevo3.csv", sep = ";", header = TRUE)
 head(rawData)
-rawData$n <- rawData$n +1
 dimensions <- dim(rawData)
 rows <- dimensions[1]
 columns <- dimensions[2]
@@ -74,68 +74,100 @@ rawData$date
 rawData$date <- as.Date(rawData$date,tryFormats = c("%d-%m-%Y", "%d/%m/%Y"))
 #taking in account only the Italian letters because they are the vast majority in the dataset
 rawData<- subset(rawData, mainLanguage=="ITA")
-
-
 ```
 
 
-##create the corpus composed only by the text data removing non ascii characters
+##create the corpus composed only by the text
 ```{r}
-myCorpus <-VCorpus(VectorSource(rawData$text))
+myCorpus <- textclean::replace_non_ascii(rawData$text) %>%VectorSource()%>%VCorpus()
 
-```
-##removing Numbers
-```{r}
-myCorpus<- tm_map(myCorpus, removeNumbers)
-myCorpus
-```
-##removing Punctuations
-```{r}
-myCorpus <- tm_map(myCorpus, removePunctuation)
-myCorpus[[36]][["content"]]
-```
-##converting to lower case
-```{r}
+myCorpus<- tm_map(myCorpus, content_transformer(removeNumbers))
+
+myRemovePunctuation <- function(x){gsub("([<>])|[[:punct:]]","",x)}
+myCorpus <- tm_map(myCorpus,content_transformer(myRemovePunctuation))
+
 myCorpus <- tm_map(myCorpus, content_transformer(tolower))
-myCorpus[[36]][["content"]]
-```
-##removing stop words italian
-```{r}
+
 myStopwords <- c(stopwords("it"))
 myCorpus <- tm_map(myCorpus, removeWords, myStopwords)
-myCorpus[[36]][["content"]]
-```
-## remove extra whitespaces
-```{r}
+
 myCorpus<- tm_map(myCorpus, stripWhitespace)
-myCorpus[[36]][["content"]]
-```
+myCorpus[[1]]$content
+install.packages("udpipe")
+library(udpipe)
+ud_model <- udpipe_download_model(language = "italian")
 
+ud_model <- udpipe_load_model(ud_model$file_model)
+x <- udpipe_annotate(ud_model, x = rawData$text, doc_id = row.names(rawData))
+x <- as.data.frame(x)
 
-##Tokenization into words and stemming function
-```{r}
-library(hunspell)
-stem_hunspell <- function(term) {
-    # look up the term in the dictionary
-    stems <- hunspell_stem(term)[[1]]
-    
-    if (length(stems) == 0) { #if there are no stems, use the original term
-        stem <- term
-    } else { # if there are multiple stems, use the last one
-        stem <- stems[[length(stems)]]
-    }
-    return(stem)
+x$token_lower = tolower(x$token)
+x$lemma_lower = tolower(x$lemma)
+x <- subset(x, select = -c(token,lemma))
+names(x)[names(x)=="token_lower"]<-"token" 
+names(x)[names(x)=="lemma_lower"]<-"lemma"
+
+lemmadictionary <- distinct(x[,c("token","lemma")],token, .keep_all = TRUE)
+
+#lemmadictionary <- make_lemma_dictionary(rawData$text, engine = "hunspell")
+lemmatizeStringpersonal <- function (x){
+  lemmatize_strings(x,dictionary = lemmadictionary)
 }
-myCorpus%>% text_tokens(stemmer=stem_hunspell)
-myCorpus
 
+myCorpus <- tm_map(myCorpus, lemmatizeStringpersonal)
+myCorpus <- tm_map(myCorpus, PlainTextDocument)
+myCorpus[[1]]
 ```
 
 ##Creation of the document term matrix and computing the cloud words to see the more frequent word in all the letters
 ```{r}
-dtm<-DocumentTermMatrix(myCorpus)
-inspect(dtm)
-m <- as.matrix(dtm)
+
+  bigramTokenizer <- 
+    function(x) unlist(lapply(ngrams(words(x), 2), paste, collapse = "_"), use.names = FALSE)
+trigramTokenizer <- 
+    function(x) unlist(lapply(ngrams(words(x), 3), paste, collapse = "_"), use.names = FALSE)
+  
+#unigramdtm
+unidtm <- DocumentTermMatrix(myCorpus)
+unidtm <- removeSparseTerms(unidtm, 0.90)
+
+#bigramdtm
+  bidtm <- DocumentTermMatrix(myCorpus, control = list(tokenize = bigramTokenizer ))
+  bidtm <- removeSparseTerms(bidtm, 0.90)#considero i termini che appaion almeno nel 70% dei documenti
+  
+#trigramdtm
+  tridtm <- DocumentTermMatrix(myCorpus, control = list(tokenize = trigramTokenizer ))
+  tridtm <- removeSparseTerms(tridtm, 0.90)#considero i termini che appaion almeno nel 70% dei documenti
+  
+
+
+#dtm<-DocumentTermMatrix(myCorpus)
+#inspect(unidtm)
+m <- as.matrix(unidtm)
+v <- sort(colSums(m),decreasing=TRUE)
+d <- data.frame(freq=v,word = names(v))
+head(d, 10)
+install.packages("wordcloud")
+library(wordcloud)
+set.seed(1234)
+wordcloud(words = d$word, freq = d$freq, min.freq = 1,
+          max.words=200, random.order=FALSE, rot.per=0.35, 
+          colors=brewer.pal(8, "Dark2"))
+
+#inspect(bidtm)
+m <- as.matrix(bidtm)
+v <- sort(colSums(m),decreasing=TRUE)
+d <- data.frame(freq=v,word = names(v))
+head(d, 10)
+install.packages("wordcloud")
+library(wordcloud)
+set.seed(1234)
+wordcloud(words = d$word, freq = d$freq, min.freq = 1,
+          max.words=200, random.order=FALSE, rot.per=0.35, 
+          colors=brewer.pal(8, "Dark2"))
+
+#inspect(tridtm)
+m <- as.matrix(tridtm)
 v <- sort(colSums(m),decreasing=TRUE)
 d <- data.frame(freq=v,word = names(v))
 head(d, 10)
@@ -148,53 +180,110 @@ wordcloud(words = d$word, freq = d$freq, min.freq = 1,
 ```
 ##Remove words thaht occur only in less 5 dcuments and the common words which appears on more than 90% of all documents
 ```{r}
-word_freq <- findFreqTerms(dtm,lowfreq = 5, highfreq = nrow(dtm)*0.9)
-dtm <-dtm[,word_freq]
-inspect(dtm)
+word_freq <- findFreqTerms(unidtm,lowfreq = 1, highfreq = nrow(unidtm)*0.9)
+unidtm <-unidtm[,word_freq]
+m <- as.matrix(unidtm)
+v <- sort(colSums(m),decreasing=TRUE)
+d <- data.frame(freq=v,word = names(v))
+head(d, 10)
+install.packages("wordcloud")
+library(wordcloud)
+set.seed(1234)
+wordcloud(words = d$word, freq = d$freq, min.freq = 1,
+          max.words=200, random.order=FALSE, rot.per=0.35, 
+          colors=brewer.pal(8, "Dark2"))
+#inspect(unidtm)
 ```
 
 ##Evaluation fo the LDA model to find the optimal number of arguments, preparing the data frame related with coherenc and number of topics
 ```{r}
-dtm_lda <- Matrix::Matrix(as.matrix(dtm), sparse = T)
-coherence =c()
-kvalues = seq(10,100,by=10)
+jaccard_similarity<- function(topic1,topic2){
+  intersection = length(intersect(topic1,topic2))
+  union = length(topic1)+length(topic2)- intersection
+  return (intersection/union)
+}
+
+dtm_lda <- Matrix::Matrix(as.matrix(bidtm), sparse = T)
+coherence = c()
+similarity = c()
+kvalues = seq(2,15,by=1)
 for(k in kvalues){
+  set.seed(123)
   m <- FitLdaModel(dtm =dtm_lda,
                         k = k, 
                         iterations = 500,
                         burnin = 400, 
                         calc_coherence = T
                         )
-  m <- mean(m$coherence)
+  letters_word_topic_iterative <- GetTopTerms(m$phi,30)%>%as.data.frame()%>%set_names(paste("topic",1:k))
+
+  sims = c()
+  for(t1 in 1:(k-1)){
+    for(t2 in (t1+1):k ){
+      topic1 <- as.vector(letters_word_topic_iterative[,c(t1)])
+      topic2 <- as.vector(letters_word_topic_iterative[,c(t2)])
+      sims <- c(sims, jaccard_similarity(topic1,topic2))                    
+    }
+  }
+
+  similaritymean <- mean(sims)
+  similarity <- c(similarity, similaritymean)
   
-  coherence <- c(coherence, m)
+  cmean <- mean(m$coherence)
+  coherence <- c(coherence, cmean)
 }
-data_graph_k_C <- data.frame(coherence,kvalues)
+data_graph_k_C_s <- data.frame(coherence,similarity,kvalues)
 ```
 
 ##visualizaation of coherance with teh number of topics
 ```{r}
-data_graph_k_C%>%mutate(max_k = which(coherence == max(coherence)) * 10) %>% 
-   ggplot(aes(kvalues, coherence)) +
-   geom_vline(aes(xintercept = max_k), alpha = 0.5, lty = "dashed") +
-   geom_line(color = "skyblue4") +
-   geom_point() +
-   scale_x_continuous(breaks = seq(0, 200, 20)) +
-   labs(x = "Number of Topics", y = "Coherence", title = "Coherence Score over Number of Topics") +
-   theme_minimal() +
-   theme(panel.grid.minor = element_blank())
+data_graph_k_C_s <- data_graph_k_C_s %>%
+  rowwise()%>%
+  mutate(DiffCS = coherence - similarity)
+
+##1K TOPICS SELECTOR-----------------------
+#ideal_k = which(data_graph_k_C_s$coherence == max(coherence) & data_graph_k_C_s$similarity == min(similarity))
+
+##2K TOPICS SELECTOR--------------------------
+#ideal_k = as.integer(data_graph_k_C_s[data_graph_k_C_s$DiffCS == max(data_graph_k_C_s$DiffCS), "kvalues"])
+
+##3K TOPICS SELECTOR------------------------
+#Take the best 5 potentially k values and from the 5 we consider only 1 with the less kvalues
+ideal_5_keys <- head(data_graph_k_C_s[order(-data_graph_k_C_s$DiffCS),],3)
+ideal_k <- as.integer(ideal_5_keys[ideal_5_keys$kvalues == min(ideal_5_keys$kvalues), "kvalues"])
+
+data_graph_k_C_s%>%
+  gather(key,value,coherence,similarity)%>%
+  ggplot(aes(x=kvalues, y=value, colour=key))+
+  geom_line()+
+  geom_vline(xintercept = ideal_k,color="red")
+
+#ideal k 13/12/2021
+
+#ggplot(data=data_graph_k_C, aes(x=kvalues,y=coherence)) +
+ # geom_line() +
+  #geom_point()+
+  #geom_vline(xintercept = ideal_k,color="red")+
+  #scale_x_continuous(breaks = seq(0, 10, 1)) +
+  #labs(x = "Number of Topics", y = "Coherence", title = "Coherence Score over Number of Topics") +
+  #theme_minimal() +
+  #theme(panel.grid.minor = element_blank())
 
 ```
 ##Topic modelling with LDA LAtent Dirichlet Allocation
 ```{r}
-
+install.packages("topicmodels")
+library(topicmodels)
 set.seed(123)
-lda_news <- FitLdaModel(dtm = dtm_lda, 
-                        k = 30, 
-                        iterations = 5000,
-                        burnin = 4000, 
+
+lda_news <- FitLdaModel(dtm =dtm_lda,
+                        k = 9, 
+                        iterations = 500,
+                        burnin = 400, 
                         calc_coherence = T
                         )
+
+
 ```
 ##Below are some important attribute acquired from the LDA Model:
 
@@ -207,14 +296,15 @@ coherence : The probabilistic coherence of each topic
 If a term has a high value of theta, it has a high probability of that term being generated from that topic. This also indicates that the term has a high association toward a certain topic.
 ```{r}
 lda_news$phi%>% rowSums()
-letters_word_topic <- GetTopTerms(lda_news$phi,30)%>% as.data.frame()%>%set_names(paste("topic",1:30))
+
+letters_word_topic <- GetTopTerms(lda_news$phi,30)%>% as.data.frame()%>%set_names(paste("topic",1:9))
 View(letters_word_topic)
 
 
 ```
 
 
-##grphical way to reppresents topic with related words
+##grphical way to reppresents topic with related words using word cloud
 ```{r}
 letters_word_topic %>% 
    rownames_to_column("id") %>%
@@ -231,83 +321,67 @@ letters_word_topic %>%
 
 
 ```
-##Document topic probabilities
-#most related document for topic 1
-```{r}
-letters_doc_topic <- as.data.frame(lda_news$theta)%>%rownames_to_column("id")
-
-letters_doc_topic %>% 
-   arrange(desc(t_1))%>%
-   left_join(rawData%>%
-               mutate(n=as.character(n))%>%
-               select(n,corpus,date,sender,recipient,text), 
-               by=c("id"= "n"))%>% 
-  select(id,date,sender,recipient,t_1)%>%
-  view()
-```
-
-#most related document for topic 2
-```{r}
-letters_doc_topic <- lda_news$theta %>% 
-   as.data.frame() %>% 
-   rownames_to_column("id")
-
-lapply(letters_doc_topic$id, as.numeric)
-
-letters_doc_topic %>% 
-   arrange(desc(t_2))%>%
-   left_join(rawData%>%
-               mutate(n=as.character(n))%>%
-               select(n,corpus,date,sender,recipient,text), 
-               by=c("id"= "n"))%>% 
-  select(id,date,sender,recipient,t_2)%>%
-  view()
-```
 
 #most related document for topic 3 we use the theta parameter from the lda
 ```{r}
-letters_doc_topic <- lda_news$theta %>% 
-   as.data.frame() %>% 
-   rownames_to_column("id")
+#letters_doc_topic <- lda_news$theta %>% 
+#   as.data.frame() %>% 
+#   rownames_to_column("id")#%>%
+#   #mutate(id = as.numeric(id))
 
-lapply(letters_doc_topic$id, as.numeric)
 
-letters_doc_topic %>% 
-   arrange(desc(t_3))%>%
-   left_join(rawData%>%
-               mutate(n=as.character(n))%>%
-               select(n,corpus,date,sender,recipient,text), 
-               by=c("id"= "n"))%>% 
-  select(id,date,sender,recipient,t_3)%>%
-  view()
+#letters_doc_topic %>% 
+#   arrange(desc(t_3))%>%
+#   left_join(rawData%>%
+#               mutate(n=as.character(n))%>%
+#               select(n,corpus,date,sender,recipient,text), 
+#               by=c("id"= "n"))%>% 
+#  select(id,date,sender,recipient,t_3)%>%
+#  view()
 ```
 
 #Top topic for each document
 ```{r}
-letters_doc_topic2 <- lda_news$theta %>% 
-   as.data.frame() 
 
-toptopics <- as.data.frame(cbind(id=row.names(letters_doc_topic2), topic= apply(letters_doc_topic2,1,function(x)names(letters_doc_topic2)[which(x==max(x))])))
+doctoptopic <- lda_news$theta %>% 
+   as.data.frame()
+
+
+colnames(doctoptopic) <- c(1,2,3,4,5,6,7,8,9)
+
+toptopics <- as.data.frame(cbind(id=row.names(rawData), topic= apply(doctoptopic,1,function(x)names(doctoptopic)[which.max(x)])))
+toptopics["date"] <- rawData$date
+
+
+transform(toptopics, topic = as.numeric(topic))
+
+
+ggplot(toptopics,mapping = aes(x= date, fill = topic, group=topic, colour = topic))+ geom_freqpoly() + facet_wrap(facets = vars(topic)) + theme(legend.position = "none")
 
 ```
 ##Topic proportion over the time
 ```{r}
 #we will see the range of date 
 range(rawData$date)
+letters_doc_topic3 <- lda_news$theta %>% 
+   as.data.frame()
+letters_doc_topic3["date"] <- rawData$date
+
 
 #we plot the topic proportion over the time
-table_topic_date <-letters_doc_topic %>% 
-   left_join(   rawData %>% 
-                mutate(n = as.character(n)) %>% 
-                select(n,date), 
-                by = c("id" = "n")) %>% 
-   select(id, everything()) 
+#table_topic_date <-letters_doc_topic %>% 
+#   left_join(   rawData %>% 
+#                mutate(n = as.character(n)) %>% 
+#                select(n,date), 
+#                by = c("id" = "n")) %>% 
+#   select(id, everything()) 
    
-df_topic_date <-table_topic_date%>%pivot_longer(c(t_1, t_2, t_3), names_to = "topic", values_to = "theta") %>% 
+df_topic_date <-letters_doc_topic3%>%pivot_longer(c(t_1, t_2, t_3, t_4), names_to = "topic", values_to = "theta") %>% 
          mutate(topic = case_when( topic == "t_1" ~ "TOPIC1",
                              topic == "t_2" ~ "TOPIC2",
-                             TRUE ~ "TOPIC3") %>% 
-          factor(levels = c("TOPIC2", "TOPIC1", "TOPIC3")),
+                             topic == "t_3"~ "TOPIC3",
+                             TRUE ~ "TOPIC4") %>% 
+          factor(levels = c("TOPIC2", "TOPIC1", "TOPIC3","TOPIC4")),
           time = floor_date(date, unit = "month")) %>% 
    group_by(time, topic)%>%
    summarise(theta = mean(theta)) 
@@ -315,16 +389,18 @@ df_topic_date
 
 
 df_topic_date%>%ggplot(aes(time, theta, fill = topic, color = topic)) +
+   #geom_area()+
    geom_line() +
-   geom_point(show.legend = F) +
    theme_minimal() +
    theme(legend.position = "top") +
-   scale_x_date(date_breaks = "1 day", 
-                labels = date_format(format = "%d\n%m")) +
-   scale_y_continuous() +
-   scale_fill_manual(values = c("firebrick", "orange", "dodgerblue3")) +
-   labs(x = NULL, y = expression(theta), color = NULL, 
-        title = "Topic Proportions Over Time on daily Interval")
+  # scale_x_date(date_breaks = "1 years", 
+                #labels = date_format(format = "%Y-%m-%d")) +
+  # scale_y_continuous() +
+   #scale_fill_manual(values = c("firebrick", "orange", "dodgerblue3", "green")) +
+   #labs(x = NULL, y = expression(theta), color = NULL, 
+        #title = "Topic Proportions Over Time on daily Interval")+
+  
+  facet_wrap(facets = vars(topic))
 ```
 
 
