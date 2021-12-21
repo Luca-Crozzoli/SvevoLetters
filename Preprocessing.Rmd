@@ -196,6 +196,8 @@ unidtm <- DocumentTermMatrix(myCorpus, control = list(wordLengths=c(2,Inf)))
   tridtm <- DocumentTermMatrix(myCorpus, control = list(tokenize = trigramTokenizer,wordLengths=c(2,Inf) ))
   #tridtm <- removeSparseTerms(tridtm, 0.90)#elimino i termini che non compaiono dall'90% in su dei documenti
 
+  install.packages("wordcloud")
+  library(wordcloud)
 m <- as.matrix(unidtm)
 v <- sort(colSums(m),decreasing=TRUE)
 d <- data.frame(freq=v,word = names(v))
@@ -566,7 +568,7 @@ doctopicclassification <- as.data.frame(cbind(id=row.names(rawData), topic= appl
 #From teh data frame toptopics add the date for each document to plot the occourences of the topic voer the time
 ```{r}
 doctopicclassification["date"] <- rawData$date
-transform(toptopics, topic = as.numeric(topic))
+transform(doctopicclassification, topic = as.numeric(topic))
 
 
 ggplot(doctopicclassification,mapping = aes(x= date, fill = topic, group=topic, colour = topic))+ geom_freqpoly() + facet_wrap(facets = vars(topic)) + theme(legend.position = "none")
@@ -576,19 +578,29 @@ ggplot(doctopicclassification,mapping = aes(x= date, fill = topic, group=topic, 
 ```{r}
 #count the pairs of sender and receivers and the number of letters exchanged puttin them in descending order
 doctopicclassification["categorie_sender_receiver"] <- rawData$corpus
+#-----------------------------------------------------------------------------
 correspondances <-table(doctopicclassification$categorie_sender_receiver) 
 correspondances_ordered <- correspondances[order(correspondances, decreasing = TRUE)]
-correspondances.df <- as.data.frame(correpondances_ordered)
-
-
-
+correspondances.df <- as.data.frame(correspondances_ordered)
+#------------------------------------------------------------------------------
 ggplot(data=doctopicclassification, aes(x= categorie_sender_receiver, fill = topic))+geom_bar()+ coord_flip()
 
 #we consider the pair sender and receiver which have
 
+
+
 ```
 
-
+```{r}
+install.packages("lessR")
+library(lessR)
+#for( i in 1:9){
+  doctopicclassification_partial <- doctopicclassification[which(doctopicclassification$topic == 1),]
+  table <- table(doctopicclassification_partial$categorie_sender_receiver)
+  pie(table)
+#}
+correspondances.df[correspondances.df$topic == 1,]
+```
 
 
 ##Topic proportion in sender and receiver
