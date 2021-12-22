@@ -563,6 +563,9 @@ doctoptopic <- lda$theta %>%
 colnames(doctoptopic) <- c(1,2,3,4,5,6,7,8,9)
 
 doctopicclassification <- as.data.frame(cbind(id=row.names(rawData), topic= apply(doctoptopic,1,function(x)names(doctoptopic)[which.max(x)])))
+
+mostrelvanttopicinthecorpus <- table(doctopicclassification$topic)
+print(mostrelvanttopicinthecorpus)
 ```
 
 #From teh data frame toptopics add the date for each document to plot the occourences of the topic voer the time
@@ -571,19 +574,19 @@ doctopicclassification["date"] <- rawData$date
 transform(doctopicclassification, topic = as.numeric(topic))
 
 
-ggplot(doctopicclassification,mapping = aes(x= date, fill = topic, group=topic, colour = topic))+ geom_freqpoly() + facet_wrap(facets = vars(topic)) + theme(legend.position = "none")
+ggplot(doctopicclassification,mapping = aes(x= date, fill = topic, group=topic, colour = topic))+ geom_freqpoly() + #facet_wrap(facets = vars(topic)) + 
+theme(legend.position = "none")
 
 ```
 ##then with the doctopicclassifcation we add the corpus categories
 ```{r}
-#count the pairs of sender and receivers and the number of letters exchanged puttin them in descending order
-doctopicclassification["categorie_sender_receiver"] <- rawData$corpus
-#-----------------------------------------------------------------------------
-correspondances <-table(doctopicclassification$categorie_sender_receiver) 
-correspondances_ordered <- correspondances[order(correspondances, decreasing = TRUE)]
-correspondances.df <- as.data.frame(correspondances_ordered)
-#------------------------------------------------------------------------------
-ggplot(data=doctopicclassification, aes(x= categorie_sender_receiver, fill = topic))+geom_bar()+ coord_flip()
+doctopicclassification$categorie_sender_receiver<- rawData$corpus
+
+doctopicclassification$receivers <- str_replace_all(doctopicclassification$receivers,"Svevo","")
+doctopicclassification$receivers <- str_replace_all(doctopicclassification$receivers,"Schmitz","")
+
+
+ggplot(data=doctopicclassification, aes(x= receivers, fill =topic ))+geom_bar(position=position_dodge(preserve = "single"))+ coord_flip() + scale_y_continuous(limits = c(0,250)) 
 
 #we consider the pair sender and receiver which have
 
@@ -592,16 +595,64 @@ ggplot(data=doctopicclassification, aes(x= categorie_sender_receiver, fill = top
 ```
 
 ```{r}
-install.packages("lessR")
-library(lessR)
-#for( i in 1:9){
-  doctopicclassification_partial <- doctopicclassification[which(doctopicclassification$topic == 1),]
-  table <- table(doctopicclassification_partial$categorie_sender_receiver)
-  pie(table)
-#}
-correspondances.df[correspondances.df$topic == 1,]
-```
 
+
+for( i in 1:9){
+  doctopicclassification_partial <- doctopicclassification[which(doctopicclassification$topic == i),]
+  table <- table(doctopicclassification_partial$receivers)
+  print(table)
+  tablevector <- as.vector(table)
+  
+  pie_labels <- paste0(" ",paste0(round(100*table/sum(table), 2), "%"))
+  pie(table,labels = pie_labels, col = rainbow(length(table)), main = paste0("topic ", i))
+  legend("bottomleft", legend = rownames(table), fill = rainbow(length(table)))
+}
+
+
+#  categories_var <- data.frame(cat=doctopicclassification_partial$categorie_sender_receiver)
+#  PieChart(cat,hole =0, values = "%", data = categories_var, fill = "rainbow", main = "")
+
+#correspondances.df[correspondances.df$topic == 1,]
+```
+```{r}
+install.packages("scales")
+install.packages("ggrepel")
+install.packages("randomcoloR")
+library(ggrepel)
+library(scales)
+library(dplyr)
+library(randomcoloR)
+set.seed(2)
+pal <- randomColor(count = length(unique(doctopicclassification$receivers)))
+pal = setNames(pal, unique(doctopicclassification$receivers))
+
+for(i in 1:9){
+  doctopicclassification_partial <- doctopicclassification[doctopicclassification$topic == i,]   
+  
+dfpartial_topic <- as.data.frame(table(doctopicclassification_partial$receivers)) %>% subset(Freq !=0) %>% mutate(perc = Freq /sum(Freq) * 100 ) %>% mutate(labels = percent(perc, scale = 1, accuracy = 0.01)) %>% rename(receivers =  Var1)
+
+df2 <- dfpartial_topic %>% mutate(csum = rev(cumsum(rev(perc))), 
+         pos = perc/2 + lead(csum, 1),
+         pos = if_else(is.na(pos), perc/2, pos))
+  
+
+  
+#ggplot(dfpartial_topic, aes(x="", y = perc, fill=categorie_sender_receiver)) + geom_col()+geom_text(aes(label=labels), position = position_stack(vjust = 0.5))+
+ # coord_polar(theta = "y")+ theme_void()
+
+
+print(ggplot(dfpartial_topic, aes(x = "" , y = perc, fill = receivers)) +
+  geom_col(width = 1, color = 1) +
+  coord_polar(theta = "y") +
+  scale_fill_manual(values = pal, guide="none")+
+  geom_label_repel(data = df2,
+                   aes(y = pos, label = paste(labels, " \n",receivers)),
+                   size =2.5 , nudge_x = 4, show.legend = FALSE) +
+  #guides(fill = guide_legend(title = "Group")) +
+  theme_void())
+}
+
+```
 
 ##Topic proportion in sender and receiver
 ```{r}
