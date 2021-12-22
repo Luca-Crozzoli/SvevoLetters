@@ -625,7 +625,23 @@ print(ggplot(dfpartial_topic, aes(x = "" , y = perc, fill = receivers)) +
 }
 
 ```
+#Triyng alluvial plot
+```{r}
 
+install.packages("ggalluvial")
+library(ggalluvial)
+doctopicclassification$year <- rawData$year
+
+doctopicclassification_crouped <- doctopicclassification%>%group_by(topic,receivers,year)%>%  tally()
+ggplot(data = doctopicclassification_crouped,
+       aes(axis1 = topic, axis2 = year , axis3 = receivers, y = n)) +
+  geom_alluvium(aes(fill = topic), curve_type = "quintic") +
+  geom_stratum(aes(fill = topic)) +
+  geom_text(stat = "stratum",
+            aes(label = after_stat(stratum))) +
+  theme_void()
+
+```
 
 
 
