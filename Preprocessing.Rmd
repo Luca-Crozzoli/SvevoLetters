@@ -578,42 +578,16 @@ ggplot(doctopicclassification,mapping = aes(x= date, fill = topic, group=topic, 
 theme(legend.position = "none")
 
 ```
-##then with the doctopicclassifcation we add the corpus categories
+##we add the column of the receivers to our data frame
 ```{r}
 doctopicclassification$categorie_sender_receiver<- rawData$corpus
 
 doctopicclassification$receivers <- str_replace_all(doctopicclassification$receivers,"Svevo","")
 doctopicclassification$receivers <- str_replace_all(doctopicclassification$receivers,"Schmitz","")
 
-
-ggplot(data=doctopicclassification, aes(x= receivers, fill =topic ))+geom_bar(position=position_dodge(preserve = "single"))+ coord_flip() + scale_y_continuous(limits = c(0,250)) 
-
-#we consider the pair sender and receiver which have
-
-
-
 ```
 
-```{r}
 
-
-for( i in 1:9){
-  doctopicclassification_partial <- doctopicclassification[which(doctopicclassification$topic == i),]
-  table <- table(doctopicclassification_partial$receivers)
-  print(table)
-  tablevector <- as.vector(table)
-  
-  pie_labels <- paste0(" ",paste0(round(100*table/sum(table), 2), "%"))
-  pie(table,labels = pie_labels, col = rainbow(length(table)), main = paste0("topic ", i))
-  legend("bottomleft", legend = rownames(table), fill = rainbow(length(table)))
-}
-
-
-#  categories_var <- data.frame(cat=doctopicclassification_partial$categorie_sender_receiver)
-#  PieChart(cat,hole =0, values = "%", data = categories_var, fill = "rainbow", main = "")
-
-#correspondances.df[correspondances.df$topic == 1,]
-```
 ```{r}
 install.packages("scales")
 install.packages("ggrepel")
@@ -631,74 +605,27 @@ for(i in 1:9){
   
 dfpartial_topic <- as.data.frame(table(doctopicclassification_partial$receivers)) %>% subset(Freq !=0) %>% mutate(perc = Freq /sum(Freq) * 100 ) %>% mutate(labels = percent(perc, scale = 1, accuracy = 0.01)) %>% rename(receivers =  Var1)
 
-df2 <- dfpartial_topic %>% mutate(csum = rev(cumsum(rev(perc))), 
+dflabel <- dfpartial_topic %>% mutate(csum = rev(cumsum(rev(perc))), 
          pos = perc/2 + lead(csum, 1),
          pos = if_else(is.na(pos), perc/2, pos))
   
-
-  
-#ggplot(dfpartial_topic, aes(x="", y = perc, fill=categorie_sender_receiver)) + geom_col()+geom_text(aes(label=labels), position = position_stack(vjust = 0.5))+
- # coord_polar(theta = "y")+ theme_void()
 
 
 print(ggplot(dfpartial_topic, aes(x = "" , y = perc, fill = receivers)) +
   geom_col(width = 1, color = 1) +
   coord_polar(theta = "y") +
   scale_fill_manual(values = pal, guide="none")+
-  geom_label_repel(data = df2,
+  geom_label_repel(data = dflabel,
                    aes(y = pos, label = paste(labels, " \n",receivers)),
                    size =2.5 , nudge_x = 4, show.legend = FALSE) +
-  #guides(fill = guide_legend(title = "Group")) +
-  theme_void())
+  theme_void()+
+  ggtitle(paste0("Topic ", i)))
 }
 
 ```
 
-##Topic proportion in sender and receiver
-```{r}
-install.packages("scales")#for method date_format
-library(scales)
-#we will see the range of date 
-range(rawData$date)
-
-#Table with id_ t1,t2,t3
-sender_receiver <-letters_doc_topic %>% 
-   left_join(   rawData %>% 
-                mutate(n = as.character(n)) %>% 
-                select(n,sender,recipient), 
-                by = c("id" = "n")) %>% 
-   select(id, everything())
-
-view(sender_receiver)
-
-sender_receiver%>%pivot_longer(c(t_1, t_2, t_3), names_to = "topic", values_to = "theta") %>% 
-   mutate(topic = case_when( topic == "t_1" ~ "TOPIC1",
-                             topic == "t_2" ~ "TOPIC2",
-                             TRUE ~ "TOPIC3") %>% 
-          factor(levels = c("TOPIC2", "TOPIC1", "TOPIC3")),
-          Senders = sender,
-          Receivers = recipient )%>%
-  group_by(sender,recipient,topic)
 
 
-plot1 <-ggplot(sender_receiver, aes(x=sender, y=recipient)) + 
-  geom_point(aes(size=t_1, color="red"))
-print(plot1)
-
-plot2 <-ggplot(sender_receiver, aes(x=sender, y=recipient)) + 
-  geom_point(aes(size=t_2, color="green"))
-print(plot2)
-
-plot3 <-ggplot(sender_receiver, aes(x=sender, y=recipient)) + 
-  geom_point(aes(size=t_3, color="blue"))
-print(plot3)
-```
-
-
-#Trying LDA vis
-```{r}
-
-```
 
 
 
