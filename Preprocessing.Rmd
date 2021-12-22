@@ -376,7 +376,7 @@ jaccard_similarity<- function(topic1,topic2){
   union = length(topic1)+length(topic2)- intersection
   return (intersection/union)
 }
-unionunibitridtmtfidf <- weightTf(unionunibitridtmtfidf)
+#unionunibitridtmtfidf <- weightTf(unionunibitridtmtfidf)
 dtm_lda_tfidf <- Matrix::Matrix(as.matrix(unionunibitridtmtfidf), sparse = T)
 coherence = c()
 similarity = c()
@@ -580,9 +580,11 @@ theme(legend.position = "none")
 ```
 ##we add the column of the receivers to our data frame
 ```{r}
+install.packages("stringr")
+library(stringr)
 doctopicclassification$categorie_sender_receiver<- rawData$corpus
 
-doctopicclassification$receivers <- str_replace_all(doctopicclassification$receivers,"Svevo","")
+doctopicclassification$receivers <- str_replace_all(doctopicclassification$categorie_sender_receiver,"Svevo","")
 doctopicclassification$receivers <- str_replace_all(doctopicclassification$receivers,"Schmitz","")
 
 ```
