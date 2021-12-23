@@ -177,7 +177,7 @@ myCorpus[[1]]$content
 myCorpus <- tm_map(myCorpus, lemmatizeStringpersonal)
 
 #remove nouns and so on
-myStopwords2 <- c(pronounstoremove,adptoremove,dettoremove,"NA")
+myStopwords2 <- c(pronounstoremove,adptoremove,dettoremove)
 chunk <- 500
 n <- length(myStopwords2)
 r <- rep(1:ceiling(n/chunk),each=chunk)[1:n]
@@ -188,6 +188,7 @@ for (i in 1:length(d)) {
 }
 
 #plain text transformation
+myCorpus <- tm_map(myCorpus, removeWords, c("NA"))
 myCorpus <- tm_map(myCorpus, PlainTextDocument)
 myCorpus[[1]]$content
 ```
