@@ -135,26 +135,30 @@ stats$key <- factor(stats$key, levels = rev(stats$key))
 barchart(key ~ freq, data = head(stats, 20), col = "cadetblue", 
          main = "Most occurring ADP", xlab = "Freq")
 
+adptoremove <- as.character(x[x$upos %in% c("ADP"), c("lemma")])
+
 #det
 stats <- subset(x, upos %in% c("DET")) 
 stats <- txt_freq(stats$lemma)
 stats$key <- factor(stats$key, levels = rev(stats$key))
 barchart(key ~ freq, data = head(stats, 20), col = "cadetblue", 
          main = "Most occurring DET", xlab = "Freq")
+
+dettoremove <- as.character(x[x$upos %in% c("DET"), c("lemma")])
 ```
 
 ##create the corpus composed only by the text
 ```{r}
 myCorpus <- textclean::replace_non_ascii(rawData$text) %>%VectorSource()%>%VCorpus()
-
+#remove numbers
 myCorpus<- tm_map(myCorpus, content_transformer(removeNumbers))
-
+#remove punctuation
 myRemovePunctuation <- function(x){gsub("([<>])|[[:punct:]]","",x)}
 myCorpus <- tm_map(myCorpus,content_transformer(myRemovePunctuation))
-
+#to lower case
 myCorpus <- tm_map(myCorpus, content_transformer(tolower))
-
-myStopwords <- c(stopwords("it"),stopwords("en"), stopwords("fr"),stopwords("de"), pronounstoremove)
+#remove stopwords
+myStopwords <- c(stopwords("it"),stopwords("en"),stopwords("fr"),stopwords("de"))
 
 chunk <- 500
 n <- length(myStopwords)
@@ -165,12 +169,25 @@ for (i in 1:length(d)) {
   myCorpus <- tm_map(myCorpus, removeWords, c(paste(d[[i]])))
 }
 
+#stripe whitespaces
 myCorpus<- tm_map(myCorpus, stripWhitespace)
 myCorpus[[1]]$content
 
-
+#lemmatize string
 myCorpus <- tm_map(myCorpus, lemmatizeStringpersonal)
-myCorpus <- tm_map(myCorpus, removeWords, c("NA"))
+
+#remove nouns and so on
+myStopwords2 <- c(pronounstoremove,adptoremove,dettoremove,"NA")
+chunk <- 500
+n <- length(myStopwords2)
+r <- rep(1:ceiling(n/chunk),each=chunk)[1:n]
+d <- split(myStopwords,r)
+
+for (i in 1:length(d)) {
+  myCorpus <- tm_map(myCorpus, removeWords, c(paste(d[[i]])))
+}
+
+#plain text transformation
 myCorpus <- tm_map(myCorpus, PlainTextDocument)
 myCorpus[[1]]$content
 ```
