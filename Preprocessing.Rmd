@@ -196,6 +196,7 @@ myCorpus[[1]]$content
 ##Creation of the document term matrix and computing the cloud words to see the more frequent word in all the letters
 ```{r}
 
+createdtmtf <- function(pruned){
   bigramTokenizer <- 
     function(x) unlist(lapply(ngrams(words(x), 2), paste, collapse = "_"), use.names = FALSE)
 trigramTokenizer <- 
@@ -204,46 +205,31 @@ trigramTokenizer <-
 #DTM  
 #unigramdtm
 unidtm <- DocumentTermMatrix(myCorpus, control = list(wordLengths=c(2,Inf)))
-#unidtm <- removeSparseTerms(unidtm, 0.90)# elimino i termini che non compaiono dall'90% in su dei dicumenti
+if(pruned ==TRUE){
+  unidtm <- removeSparseTerms(unidtm, 0.9999)
+  terms <- findFreqTerms(unidtm, lowfreq = 3)
+  unidtm <- unidtm[,terms]
+  }# elimino i termini che non compaiono dall'90% in su dei dicumenti}
+
 
 #bigramdtm
   bidtm <- DocumentTermMatrix(myCorpus, control = list(tokenize = bigramTokenizer,wordLengths=c(2,Inf) ))
-  #bidtm <- removeSparseTerms(bidtm, 0.90)#elimino i termini che non compaiono dall' 90% in su dei documenti
+  if(pruned == TRUE){
+  bidtm <- removeSparseTerms(bidtm, 0.99999)
+  terms <- findFreqTerms(bidtm, lowfreq = 3)
+  bidtm <- bidtm[,terms]}
   
 #trigramdtm
   tridtm <- DocumentTermMatrix(myCorpus, control = list(tokenize = trigramTokenizer,wordLengths=c(2,Inf) ))
-  #tridtm <- removeSparseTerms(tridtm, 0.90)#elimino i termini che non compaiono dall'90% in su dei documenti
+  if(pruned ==TRUE){
+  unidtm <- removeSparseTerms(unidtm, 0.99999)
+  terms <- findFreqTerms(tridtm, lowfreq = 3)
+  tridtm <- tridtm[,terms]
+  }
 
   install.packages("wordcloud")
   library(wordcloud)
-m <- as.matrix(unidtm)
-v <- sort(colSums(m),decreasing=TRUE)
-d <- data.frame(freq=v,word = names(v))
-head(d, 10)
-set.seed(1234)
-wordcloud(words = d$word, freq = d$freq, min.freq = 1,
-          max.words=200, random.order=FALSE, rot.per=0.35, 
-          colors=brewer.pal(8, "Dark2"))
 
-#inspect(bidtm)
-m <- as.matrix(bidtm)
-v <- sort(colSums(m),decreasing=TRUE)
-d <- data.frame(freq=v,word = names(v))
-head(d, 10)
-set.seed(1234)
-wordcloud(words = d$word, freq = d$freq, min.freq = 1,
-          max.words=200, random.order=FALSE, rot.per=0.35, 
-          colors=brewer.pal(8, "Dark2"))
-
-#inspect(tridtm)
-m <- as.matrix(tridtm)
-v <- sort(colSums(m),decreasing=TRUE)
-d <- data.frame(freq=v,word = names(v))
-head(d, 10)
-set.seed(1234)
-wordcloud(words = d$word, freq = d$freq, min.freq = 1,
-          max.words=200, random.order=FALSE, rot.per=0.35, 
-          colors=brewer.pal(8, "Dark2"))
 
 #inspect union and bigrams
 unionunibitridtm <- cbind(unidtm,bidtm,tridtm)
@@ -256,111 +242,49 @@ set.seed(1234)
 wordcloud(words = d$word, freq = d$freq, min.freq = 1,
           max.words=400, random.order=FALSE, rot.per=0.35, 
           colors=brewer.pal(8, "Dark2"))
-
-  
-##DTM TFIDF  
-#unigramtfidf
-  unidtmtfidf <- DocumentTermMatrix(myCorpus, control = list(wordLenghts = c(2,Inf)))
-unidtmtfidf <- weightTfIdf(unidtmtfidf, normalize = TRUE)
-#unidtmtfidf <- removeSparseTerms(unidtmtfidf, 0.90)
-
-#bigramtfidf
-  bidtmtfidf <- DocumentTermMatrix(myCorpus,control = list(tokenize = bigramTokenizer,wordLengths=c(2,Inf) ))
-bidtmtfidf <- weightTfIdf(bidtmtfidf, normalize = TRUE)
-#bidtmtfidf <- removeSparseTerms(bidtmtfidf, 0.90)
-
-#trigramtfidf
-  tridtmtfidf <- DocumentTermMatrix(myCorpus,control = list(tokenize = trigramTokenizer,wordLengths=c(2,Inf) ))
-tridtmtfidf <- weightTfIdf(tridtmtfidf, normalize = TRUE)
-#tridtmtfidf <- removeSparseTerms(tridtmtfidf, 0.90)
+return(unionunibitridtm)
+}
 
 
+#create_tfidf <- function(unionunibitridtm){
+##create the tfidf
+#unionunibitridmTFIDF <- weightTfIdf(unionunibitridtm)
+#terms <- findFreqTerms(unionunibitridmTFIDF, lowfreq = 0.02)
+#unionunibitridmTFIDF <- unionunibitridmTFIDF[,terms]
 
-#inspect unidtmtfidf
-m <- as.matrix(unidtmtfidf)
-v <- sort(colSums(m),decreasing=TRUE)
-d <- data.frame(freq=v,word = names(v))
-head(d, 10)
-set.seed(1234)
-wordcloud(words = d$word, freq = d$freq, min.freq = 1,
-          max.words=200, random.order=FALSE, rot.per=0.35, 
-          colors=brewer.pal(8, "Dark2"))
+#m <- as.matrix(unionunibitridmTFIDF)
+#v <- sort(colSums(m),decreasing=TRUE)
+#d <- data.frame(freq=v,word = names(v))
+#head(d, 10)
+#set.seed(1234)
+#wordcloud(words = d$word, freq = d$freq, min.freq = 1,
+#          max.words=400, random.order=FALSE, rot.per=0.35, 
+#          colors=brewer.pal(8, "Dark2"))
 
-#inspect bidtmtfidf
-m <- as.matrix(bidtmtfidf)
-v <- sort(colSums(m),decreasing=TRUE)
-d <- data.frame(freq=v,word = names(v))
-head(d, 10)
-set.seed(1234)
-wordcloud(words = d$word, freq = d$freq, min.freq = 1,
-          max.words=200, random.order=FALSE, rot.per=0.35, 
-          colors=brewer.pal(8, "Dark2"))
+#unionunibitridmTFIDF <- weightTf(unionunibitridmTFIDF)
+#return(unionunibitridmTFIDF)
+#}
 
-#inspect tridtmtfidf
-m <- as.matrix(tridtmtfidf)
-v <- sort(colSums(m),decreasing=TRUE)
-d <- data.frame(freq=v,word = names(v))
-head(d, 10)
-set.seed(1234)
-wordcloud(words = d$word, freq = d$freq, min.freq = 1,
-          max.words=200, random.order=FALSE, rot.per=0.35, 
-          colors=brewer.pal(8, "Dark2"))
+dtmtf <- createdtmtf(FALSE)
+#dtmtfidf <- create_tfidf(dtmtf)
 
-#inspect union and bigrams
-unionunibitridtmtfidf <- cbind(unidtmtfidf,bidtmtfidf,tridtmtfidf)
-attributes(unionunibitridtmtfidf) <- attributes(unidtmtfidf)
-m <- as.matrix(unionunibitridtmtfidf)
-v <- sort(colSums(m),decreasing=TRUE)
-d <- data.frame(freq=v,word = names(v))
-head(d, 10)
-set.seed(1234)
-wordcloud(words = d$word, freq = d$freq, min.freq = 1,
-          max.words=400, random.order=FALSE, rot.per=0.35, 
-          colors=brewer.pal(8, "Dark2"))
-
-
-
-
-```
-##Remove words thaht occur only in less 5 dcuments and the common words which appears on more than 90% of all documents
-```{r}
-word_freq <- findFreqTerms(unionunibitridtm,lowfreq = 1, highfreq = nrow(unionunibitridtm)*0.9)
-unionunibitridtm <-unionunibitridtm[,word_freq]
-m <- as.matrix(unionunibitridtm)
-v <- sort(colSums(m),decreasing=TRUE)
-d <- data.frame(freq=v,word = names(v))
-head(d, 10)
-set.seed(1234)
-wordcloud(words = d$word, freq = d$freq, min.freq = 1,
-          max.words=200, random.order=FALSE, rot.per=0.35, 
-          colors=brewer.pal(8, "Dark2"))
-
-
-word_freq2 <- findFreqTerms(unionunibitridtmtfidf,lowfreq = 1, highfreq = nrow(unionunibitridtmtfidf)*0.9)
-unionunibitridtmtfidf <-unionunibitridtmtfidf[,word_freq2]
-m <- as.matrix(unionunibitridtmtfidf)
-v <- sort(colSums(m),decreasing=TRUE)
-d <- data.frame(freq=v,word = names(v))
-head(d, 10)
-set.seed(1234)
-wordcloud(words = d$word, freq = d$freq, min.freq = 1,
-          max.words=200, random.order=FALSE, rot.per=0.35, 
-          colors=brewer.pal(8, "Dark2"))
-#inspect(unidtm)
+dtmtfpruned <- createdtmtf(TRUE)
+#dtmtfidfpruned <- create_tfidf(dtmtfpruned)
 ```
 
-##Evaluation fo the LDA model to find the optimal number of arguments, preparing the data frame related with coherenc and number of topics
+##Evaluation of the LDA model to find the optimal number of arguments, preparing the data frame related with coherenc and number of topics
 ```{r}
+graphs_data <- function(matrix){
 jaccard_similarity<- function(topic1,topic2){
   intersection = length(intersect(topic1,topic2))
   union = length(topic1)+length(topic2)- intersection
   return (intersection/union)
 }
 
-dtm_lda <- Matrix::Matrix(as.matrix(unionunibitridtm), sparse = T)
+dtm_lda <- Matrix::Matrix(as.matrix(matrix), sparse = T)
 coherence = c()
 similarity = c()
-kvalues = seq(2,15,by=1)
+kvalues = seq(2,10,by=1)
 for(k in kvalues){
   set.seed(123)
   m <- FitLdaModel(dtm =dtm_lda,
@@ -387,48 +311,18 @@ for(k in kvalues){
   coherence <- c(coherence, cmean)
 }
 data_graph_k_C_s <- data.frame(coherence,similarity,kvalues)
-
-##unidtmtfidf
-jaccard_similarity<- function(topic1,topic2){
-  intersection = length(intersect(topic1,topic2))
-  union = length(topic1)+length(topic2)- intersection
-  return (intersection/union)
+return(data_graph_k_C_s)
 }
-#unionunibitridtmtfidf <- weightTf(unionunibitridtmtfidf)
-dtm_lda_tfidf <- Matrix::Matrix(as.matrix(unionunibitridtmtfidf), sparse = T)
-coherence = c()
-similarity = c()
-kvalues = seq(2,15,by=1)
-for(k in kvalues){
-  set.seed(123)
-  m <- FitLdaModel(dtm =dtm_lda_tfidf,
-                        k = k, 
-                        iterations = 500,
-                        burnin = 400, 
-                        calc_coherence = T
-                        )
-  letters_word_topic_iterative <- GetTopTerms(m$phi,30)%>%as.data.frame()%>%set_names(paste("topic",1:k))
 
-  sims = c()
-  for(t1 in 1:(k-1)){
-    for(t2 in (t1+1):k ){
-      topic1 <- as.vector(letters_word_topic_iterative[,c(t1)])
-      topic2 <- as.vector(letters_word_topic_iterative[,c(t2)])
-      sims <- c(sims, jaccard_similarity(topic1,topic2))                    
-    }
-  }
+dftfNtopic <- graphs_data(dtmtf)
 
-  similaritymean <- mean(sims)
-  similarity <- c(similarity, similaritymean)
-  
-  cmean <- mean(m$coherence)
-  coherence <- c(coherence, cmean)
-}
-data_graph_k_C_s_2 <- data.frame(coherence,similarity,kvalues)
+dftfNtopicPruned <- graphs_data(dtmtfpruned)
 ```
 
 ##visualizaation of coherance with teh number of topics
 ```{r}
+
+plot <- function(data_graph_k_C_s){
 data_graph_k_C_s <- data_graph_k_C_s %>%
   rowwise()%>%
   mutate(DiffCS = coherence - similarity)
@@ -444,11 +338,11 @@ data_graph_k_C_s <- data_graph_k_C_s %>%
 ideal_5_keys <- head(data_graph_k_C_s[order(-data_graph_k_C_s$DiffCS),],3)
 ideal_k <- as.integer(ideal_5_keys[ideal_5_keys$kvalues == min(ideal_5_keys$kvalues), "kvalues"])
 
-data_graph_k_C_s%>%
+print(data_graph_k_C_s%>%
   gather(key,value,coherence,similarity)%>%
   ggplot(aes(x=kvalues, y=value, colour=key))+
   geom_line()+
-  geom_vline(xintercept = ideal_k,color="red")
+  geom_vline(xintercept = ideal_k,color="red"))
 
 #ideal k 13/12/2021
 
@@ -460,27 +354,11 @@ data_graph_k_C_s%>%
   #labs(x = "Number of Topics", y = "Coherence", title = "Coherence Score over Number of Topics") +
   #theme_minimal() +
   #theme(panel.grid.minor = element_blank())
+ return(ideal_k)
+}
 
-data_graph_k_C_s_2 <- data_graph_k_C_s_2 %>%
-  rowwise()%>%
-  mutate(DiffCS = coherence - similarity)
-
-##1K TOPICS SELECTOR-----------------------
-#ideal_k = which(data_graph_k_C_s$coherence == max(coherence) & data_graph_k_C_s$similarity == min(similarity))
-
-##2K TOPICS SELECTOR--------------------------
-#ideal_k = as.integer(data_graph_k_C_s[data_graph_k_C_s$DiffCS == max(data_graph_k_C_s$DiffCS), "kvalues"])
-
-##3K TOPICS SELECTOR------------------------
-#Take the best 5 potentially k values and from the 5 we consider only 1 with the less kvalues
-ideal_5_keys <- head(data_graph_k_C_s_2[order(-data_graph_k_C_s_2$DiffCS),],3)
-ideal_k <- as.integer(ideal_5_keys[ideal_5_keys$kvalues == min(ideal_5_keys$kvalues), "kvalues"])
-
-data_graph_k_C_s_2%>%
-  gather(key,value,coherence,similarity)%>%
-  ggplot(aes(x=kvalues, y=value, colour=key))+
-  geom_line()+
-  geom_vline(xintercept = ideal_k,color="red")
+Ntopic <- plot(dftfNtopic)
+Ntopicpruned <- plot(dftfNtopicPruned)
 
 ```
 ##Topic modelling with LDA LAtent Dirichlet Allocation
@@ -489,7 +367,7 @@ install.packages("topicmodels")
 library(topicmodels)
 set.seed(123)
 
-lda <- FitLdaModel(dtm =dtm_lda,
+lda <- FitLdaModel(dtm =dtmtf,
                         k = 9, 
                         iterations = 500,
                         burnin = 400, 
