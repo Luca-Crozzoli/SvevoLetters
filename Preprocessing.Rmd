@@ -509,9 +509,9 @@ for(t in 1:5){
   
   WordsForSentiment = c()
   
-  for(i in emotions ){
+  for(e in emotions ){
     
-    value <- sum(sentimentdf_partial[,i])
+    value <- sum(sentimentdf_partial[,e])
     WordsForSentiment <- c(WordsForSentiment, value)
   }
   
@@ -521,9 +521,9 @@ for(t in 1:5){
   
   relativePercentage <- c()
   
-  for(i in emotions){
+  for(e in emotions){
     
-    value <- WordsForSentiment[[i]]
+    value <- WordsForSentiment[[e]]
     relativePercentage <- c(relativePercentage, value/totalSentimentWordTopic *100)
   }
   
@@ -546,8 +546,50 @@ for(t in 1:5){
 
 #plot the proprotion of emotions during the years
 ```{r}
+sentimentdf%>%ungroup()
+#angerbeforgroup <- count(sentimentdf, trust)
+sentimentdf %>% group_by(year)
+#angernumber <- count(sentimentdf, trust)
 
+yearsvector <- rownames(table(sentimentdf$year))
+#tableex
+datalist <- data.frame(relativePercentage = integer(),emotions = character(),year =integer())
+for (year in yearsvector){
+  sentimentdf_partial_year <- sentimentdf[sentimentdf$year == year,]
+  
+  WordsForSentiment = c()
+  
+  for(e in emotions ){
+    
+    value <- sum(sentimentdf_partial_year[,e])
+    WordsForSentiment <- c(WordsForSentiment, value)
+  }
+  
+  names(WordsForSentiment)  <- emotions
+ 
+  totalSentimentWordTopic <- sum(WordsForSentiment)
+  
+  relativePercentage <- c()
+  
+  for(e in emotions){
+    
+    value <- WordsForSentiment[[e]]
+    relativePercentage <- c(relativePercentage, value/totalSentimentWordTopic *100)
+  }
+  
+  sentimentTopicdf <- data.frame(relativePercentage, emotions, year)
+  datalist<-rbind(datalist, sentimentTopicdf)
+  
+}
 
+ggplot(doctopicclassification,mapping = aes(x= date, fill = topic, group=topic, colour = topic))+ geom_freqpoly()
+  
+  print(ggplot(datalist, aes(x = year , y = relativePercentage, fill = emotions, group = emotions, colour = emotions)) +
+  geom_line())
+  #geom_text(aes(label = labels), position = position_stack(vjust = 0.5))+
+  #coord_polar(theta = "y") +
+  #theme_void()+
+  #ggtitle(paste0("Topic ", t)))
 
 ```
 
