@@ -587,7 +587,6 @@ ggplot(doctopicclassification,mapping = aes(x= date, fill = topic, group=topic, 
   print(ggplot(datalist, aes(x = year , y = relativePercentage, fill = emotions, group = emotions, colour = emotions)) +
   geom_line())
   
-
 ```
 
 
