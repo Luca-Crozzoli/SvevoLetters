@@ -443,10 +443,12 @@ library(randomcoloR)
 set.seed(2)
 pal <- randomColor(count = length(unique(doctopicclassification$receivers)))
 pal = setNames(pal, unique(doctopicclassification$receivers))
+
 for(i in 1:5){
   doctopicclassification_partial <- doctopicclassification[doctopicclassification$topic == i,]   
   
 dfpartial_topic <- as.data.frame(table(doctopicclassification_partial$receivers)) %>% subset(Freq !=0) %>% mutate(perc = Freq /sum(Freq) * 100 ) %>% mutate(labels = percent(perc, scale = 1, accuracy = 0.01)) %>% rename(receivers =  Var1)
+
 dflabel <- dfpartial_topic %>% mutate(csum = rev(cumsum(rev(perc))), 
          pos = perc/2 + lead(csum, 1),
          pos = if_else(is.na(pos), perc/2, pos))
@@ -488,17 +490,66 @@ dfcorpus2 <- data.frame( text = dfcorpus[!(dfcorpus$text == ""),])
 vector <- as.character(dfcorpus2$text)
 #obtaining sentiment scores
 sentimentscores <- get_nrc_sentiment(vector, language = "italian")
+#remove the positive and negative columns
+sentimentscores[9:10] <- NULL 
 
 #combine text sentiment, datae and correspondances columns
 sentimentdf <- cbind(doctopicclassification, vector,sentimentscores)
 
 #barplot for sentiment
-barplot(colSums(sentimentscores), col = rainbow(8), ylab = "count", main = "Overall sentiment analysis")
+barplot(colSums(sentimentscores), col = rainbow(8), ylab = "count", main = "Overall sentiment analysis", las = 2)
 ```
 
+#plot the graph to see the sentiment analysis for each topic
+```{r}
+emotions <-c("anger","anticipation","disgust","fear","joy","sadness","surprise","trust")
+
+for(t in 1:5){
+  sentimentdf_partial <- sentimentdf[sentimentdf$topic == t,] 
+  
+  WordsForSentiment = c()
+  
+  for(i in emotions ){
+    
+    value <- sum(sentimentdf_partial[,i])
+    WordsForSentiment <- c(WordsForSentiment, value)
+  }
+  
+  names(WordsForSentiment)  <-emotions
+ 
+  totalSentimentWordTopic <- sum(WordsForSentiment)
+  
+  relativePercentage <- c()
+  
+  for(i in emotions){
+    
+    value <- WordsForSentiment[[i]]
+    relativePercentage <- c(relativePercentage, value/totalSentimentWordTopic *100)
+  }
+  
+  sentimentTopicdf <- data.frame(relativePercentage, emotions)
+  
+  sentimentTopicdf<- sentimentTopicdf %>% mutate(labels = percent(relativePercentage, scale = 1, accuracy = 0.01))
+  
+  print(ggplot(sentimentTopicdf, aes(x = "" , y = relativePercentage, fill = emotions)) +
+  geom_col(width = 1, color = 1) +
+  geom_text(aes(label = labels), position = position_stack(vjust = 0.5))+
+  coord_polar(theta = "y") +
+  theme_void()+
+  ggtitle(paste0("Topic ", t)))
+}
+  
 
 
 
+```
+
+#plot the proprotion of emotions during the years
+```{r}
+
+
+
+```
 
 
 
