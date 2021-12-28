@@ -488,7 +488,12 @@ dfcorpus2 <- data.frame( text = dfcorpus[!(dfcorpus$text == ""),])
 vector <- as.character(dfcorpus2$text)
 #obtaining sentiment scores
 sentimentscores <- get_nrc_sentiment(vector, language = "italian")
-head(sentimentscores,10)
+
+#combine text sentiment, datae and correspondances columns
+sentimentdf <- cbind(doctopicclassification, vector,sentimentscores)
+
+#barplot for sentiment
+barplot(colSums(sentimentscores), col = rainbow(8), ylab = "count", main = "Overall sentiment analysis")
 ```
 
 
