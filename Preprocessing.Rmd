@@ -61,6 +61,8 @@ SectionNames <-levels(factor(rawData$corpus))
 SectionNames
 Languages<-levels(factor(rawData$mainLanguage))
 Languages
+letters_for_languages <- table(rawData$mainLanguage)
+print(letters_for_languages)
 ```
 
 
@@ -171,7 +173,7 @@ for (i in 1:length(d)) {
 
 #stripe whitespaces
 myCorpus<- tm_map(myCorpus, stripWhitespace)
-myCorpus[[1]]$content
+#myCorpus[[1]]$content
 
 #lemmatize string
 myCorpus <- tm_map(myCorpus, lemmatizeStringpersonal)
@@ -190,7 +192,7 @@ for (i in 1:length(d)) {
 #plain text transformation
 myCorpus <- tm_map(myCorpus, removeWords, c("NA"))
 myCorpus <- tm_map(myCorpus, PlainTextDocument)
-myCorpus[[1]]$content
+#myCorpus[[1]]$content
 ```
 
 ##creation of the different dtm matrix
@@ -237,26 +239,9 @@ wordcloud(words = d$word, freq = d$freq, min.freq = 1,
           colors=brewer.pal(8, "Dark2"))
 return(unionunibitridtm)
 }
-#create_tfidf <- function(unionunibitridtm){
-##create the tfidf
-#unionunibitridmTFIDF <- weightTfIdf(unionunibitridtm)
-#terms <- findFreqTerms(unionunibitridmTFIDF, lowfreq = 0.02)
-#unionunibitridmTFIDF <- unionunibitridmTFIDF[,terms]
-#m <- as.matrix(unionunibitridmTFIDF)
-#v <- sort(colSums(m),decreasing=TRUE)
-#d <- data.frame(freq=v,word = names(v))
-#head(d, 10)
-#set.seed(1234)
-#wordcloud(words = d$word, freq = d$freq, min.freq = 1,
-#          max.words=400, random.order=FALSE, rot.per=0.35, 
-#          colors=brewer.pal(8, "Dark2"))
-#unionunibitridmTFIDF <- weightTf(unionunibitridmTFIDF)
-#return(unionunibitridmTFIDF)
-#}
+
 dtmtf <- createdtmtf(FALSE)
-#dtmtfidf <- create_tfidf(dtmtf)
 dtmtfpruned <- createdtmtf(TRUE)
-#dtmtfidfpruned <- create_tfidf(dtmtfpruned)
 
 ```
 ##Evaluation of the LDA model to find the optimal number of arguments, preparing the data frame related with coherenc and number of topics
@@ -422,7 +407,8 @@ print(mostrelvanttopicinthecorpus)
 #From teh data frame toptopics add the date for each document to plot the occourences of the topic voer the time
 ```{r}
 doctopicclassification["date"] <- rawData$date
-transform(doctopicclassification, topic = as.numeric(topic))
+daterange <- range(rawData$date, na.rm = TRUE)
+numberofyears <- nrow(table(rawData$year))#geom_freqpoly(bins = numberofyears )
 ggplot(doctopicclassification,mapping = aes(x= date, fill = topic, group=topic, colour = topic))+ geom_freqpoly() + #facet_wrap(facets = vars(topic)) + 
 theme(legend.position = "none")
 ```
@@ -491,7 +477,19 @@ ggplot(data = doctopicclassification_crouped,
   theme_void()
 ```
 
+#sentiment anlayisis
+```{r}
+install.packages("syuzhet")
+library(syuzhet)
 
+dfcorpus <- data.frame(text = unlist(sapply(myCorpus,`[`, "content")), stringsAsFactors = FALSE)
+dfcorpus2 <- data.frame( text = dfcorpus[!(dfcorpus$text == ""),])
+
+vector <- as.character(dfcorpus2$text)
+#obtaining sentiment scores
+sentimentscores <- get_nrc_sentiment(vector, language = "italian")
+head(sentimentscores,10)
+```
 
 
 
