@@ -586,7 +586,15 @@ ggplot(doctopicclassification,mapping = aes(x= date, fill = topic, group=topic, 
   
   print(ggplot(datalist, aes(x = year , y = relativePercentage, fill = emotions, group = emotions, colour = emotions)) +
   geom_line())
+<<<<<<< HEAD
   
+=======
+  #geom_text(aes(label = labels), position = position_stack(vjust = 0.5))+
+  #coord_polar(theta = "y") +
+  #theme_void()+
+  #ggtitle(paste0("Topic ", t)))
+
+>>>>>>> e6afe7b77080da7b43aad6b46fa542ac9e8d7f5a
 ```
 
 
