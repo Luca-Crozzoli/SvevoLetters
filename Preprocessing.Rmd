@@ -378,57 +378,86 @@ letters_word_topic %>%
          strip.text.x = element_text(colour = "white"))
 ```
 
-#most related document for topic 3 we use the theta parameter from the lda
+#Top topic for each document wit thew respective yera
 ```{r}
-#letters_doc_topic <- lda_news$theta %>% 
-#   as.data.frame() %>% 
-#   rownames_to_column("id")#%>%
-#   #mutate(id = as.numeric(id))
-#letters_doc_topic %>% 
-#   arrange(desc(t_3))%>%
-#   left_join(rawData%>%
-#               mutate(n=as.character(n))%>%
-#               select(n,corpus,date,sender,recipient,text), 
-#               by=c("id"= "n"))%>% 
-#  select(id,date,sender,recipient,t_3)%>%
-#  view()
-```
-
-#Top topic for each document
-```{r}
-doctoptopic <- lda$theta %>% 
+docThetaTopic <- lda$theta %>% 
    as.data.frame()
-colnames(doctoptopic) <- c(1,2,3,4,5)
-doctopicclassification <- as.data.frame(cbind(id=row.names(rawData), topic= apply(doctoptopic,1,function(x)names(doctoptopic)[which.max(x)])))
-mostrelvanttopicinthecorpus <- table(doctopicclassification$topic)
-print(mostrelvanttopicinthecorpus)
+colnames(docThetaTopic) <- c(1,2,3,4,5)
+
+docTopicClassificationDf <- as.data.frame(cbind(id=row.names(rawData), topic= apply(docThetaTopic,1,function(x)names(docThetaTopic)[which.max(x)]), year = rawData$year))
+
+lettersTopic <- table(docTopicClassificationDf$topic)
+print(lettersTopic)
 ```
 
-#From teh data frame toptopics add the date for each document to plot the occourences of the topic voer the time
+#From teh data frame toptopics add the date for each document to plot the occourences of the topic over the time
 ```{r}
-doctopicclassification["date"] <- rawData$date
+#doctopicclassification["date"] <- rawData$date
+#doctopicclassification["year"] <- rawData$year
 daterange <- range(rawData$date, na.rm = TRUE)
-numberofyears <- nrow(table(rawData$year))#geom_freqpoly(bins = numberofyears )
-ggplot(doctopicclassification,mapping = aes(x= date, fill = topic, group=topic, colour = topic))+ geom_freqpoly() + #facet_wrap(facets = vars(topic)) + 
-theme(legend.position = "none")
+date_1 <- as.Date(daterange[1])
+date_2 <- as.Date(daterange[2])
+
+yearsvector <- rownames(table(docTopicClassificationDf$year))
+
+topics <- c(1,2,3,4,5)
+datalistTopicYearDf <- data.frame(year = integer(), numberTopicsYear= integer(),topics =integer())
+
+for(year in yearsvector){
+  docTopicClassification_year <- docTopicClassificationDf[docTopicClassificationDf$year == year,]
+    
+    #count the number of different topics for the current year
+    numberTopicsYear <- table(docTopicClassification_year$topic)
+    print(numberTopicsYear)
+    topics <- row.names(numberTopicsYear)
+  
+    
+    letterTopicYearDf <- data.frame(year,numberTopicsYear)%>%rename(topics =  Var1,numberTopicsYear = Freq)
+
+    datalistTopicYearDf<-rbind(datalistTopicYearDf, letterTopicYearDf)
+    
+ }
+
+#convert the year into a date object  
+datalistTopicYearDf$year = as.Date(as.character(datalistTopicYearDf$year), format = "%Y")
+
+#plot the graph of the number of letters per topic during each year 
+print(ggplot(datalistTopicYearDf, aes(x = year %m-% months(12) , y = numberTopicsYear, fill = topics, group = topics, colour = topics)) +scale_y_continuous(name = "count")+ geom_line()+geom_point()+facet_wrap(~ factor(topics, levels = c(1,2,3,4,5)))+ theme(legend.position = "none") + xlab("year"))
+
+
+
+
+#OLD STUFF##########################################################################
+#}
+    
+#    }
+
+#years <- seq(from= date_1, to=date_2, by="year")
+#years <- length(years)-1
+#numberofyears <- nrow(table(rawData$year))#geom_freqpoly(bins = numberofyears )
+#ggplot(doctopicclassification,mapping = aes(x= year, fill = topic, group=topic, colour = topic))+
+ # geom_bar()+
+  #geom_freqpoly(bins = years) + scale_x_continuous(minor_breaks = seq(1885,1930,1))
+  #facet_wrap(facets = vars(topic)) + 
+#theme(legend.position = "none")
 ```
 ##we add the column of the receivers to our data frame
 ```{r}
 install.packages("stringr")
 library(stringr)
-doctopicclassification$categorie_sender_receiver<- rawData$corpus
-doctopicclassification$receivers <- str_replace_all(doctopicclassification$categorie_sender_receiver,"Svevo","")
-doctopicclassification$receivers <- str_replace_all(doctopicclassification$receivers,"Schmitz","")
+docTopicClassificationDf$correspondence<- rawData$corpus%>%str_replace_all(c("Svevo"="","Schmitz"=""))
+
 
 #all the receivers with less than 5 letters are marked as others
-numberletters_receiver <- table(doctopicclassification$receivers)
-print(numberletters_receiver)
-numberletters_receiver <- as.data.frame(numberletters_receiver)
-numberletters_receiver <- subset(numberletters_receiver, numberletters_receiver$Freq <=5 )
+correspondenceLessThan5 <- as.data.frame(table(docTopicClassificationDf$correspondence)) %>% rename(correspondence = Var1, count = Freq)%>%subset(count<=5)
 
-receiverlessthan5 <- as.vector(numberletters_receiver$Var1)
+correspondenceLessThan5 <- as.vector(correspondenceLessThan5$correspondence)
 
-doctopicclassification$receivers[doctopicclassification$receivers %in% receiverlessthan5]<- "Others"
+#correspondenceLessThan5 <- subset(numberLettersCorrespondence, numberLettersCorrespondence$count <=5 )
+
+#correspondenceLessThan5 <- as.vector(correspondenceLessThan5$correspondence)
+
+docTopicClassificationDf$correspondence[docTopicClassificationDf$correspondence %in% correspondenceLessThan5]<- "Others"
 ```
 
 
@@ -441,24 +470,24 @@ library(scales)
 library(dplyr)
 library(randomcoloR)
 set.seed(2)
-pal <- randomColor(count = length(unique(doctopicclassification$receivers)))
-pal = setNames(pal, unique(doctopicclassification$receivers))
+pal <- randomColor(count = length(unique(docTopicClassificationDf$correspondence)))
+pal = setNames(pal, unique(docTopicClassificationDf$correspondence))
 
 for(i in 1:5){
-  doctopicclassification_partial <- doctopicclassification[doctopicclassification$topic == i,]   
+  docTopicClassification_partial <- docTopicClassificationDf[docTopicClassificationDf$topic == i,]   
   
-dfpartial_topic <- as.data.frame(table(doctopicclassification_partial$receivers)) %>% subset(Freq !=0) %>% mutate(perc = Freq /sum(Freq) * 100 ) %>% mutate(labels = percent(perc, scale = 1, accuracy = 0.01)) %>% rename(receivers =  Var1)
+correspondencePercentageTopicDf <- as.data.frame(table(docTopicClassification_partial$correspondence)) %>% subset(Freq !=0) %>% mutate(perc = Freq /sum(Freq) * 100 ) %>% mutate(labels = percent(perc, scale = 1, accuracy = 0.01)) %>% rename(correspondence =  Var1)
 
-dflabel <- dfpartial_topic %>% mutate(csum = rev(cumsum(rev(perc))), 
+dflabel <- correspondencePercentageTopicDf %>% mutate(csum = rev(cumsum(rev(perc))), 
          pos = perc/2 + lead(csum, 1),
          pos = if_else(is.na(pos), perc/2, pos))
   
-print(ggplot(dfpartial_topic, aes(x = "" , y = perc, fill = receivers)) +
+print(ggplot(correspondencePercentageTopicDf, aes(x = "" , y = perc, fill = correspondence)) +
   geom_col(width = 1, color = 1) +
   coord_polar(theta = "y") +
   scale_fill_manual(values = pal, guide="none")+
   geom_label_repel(data = dflabel,
-                   aes(y = pos, label = paste(labels, " \n",receivers)),
+                   aes(y = pos, label = paste(labels, " \n",correspondence)),
                    size =2.5 , nudge_x = 4, show.legend = FALSE) +
   theme_void()+
   ggtitle(paste0("Topic ", i)))
@@ -466,17 +495,17 @@ print(ggplot(dfpartial_topic, aes(x = "" , y = perc, fill = receivers)) +
 ```
 #Triyng alluvial plot
 ```{r}
-install.packages("ggalluvial")
-library(ggalluvial)
-doctopicclassification$year <- rawData$year
-doctopicclassification_crouped <- doctopicclassification%>%group_by(topic,receivers,year)%>%  tally()
-ggplot(data = doctopicclassification_crouped,
-       aes(axis1 = topic, axis2 = year , axis3 = receivers, y = n)) +
-  geom_alluvium(aes(fill = topic), curve_type = "quintic") +
-  geom_stratum(aes(fill = topic)) +
-  geom_text(stat = "stratum",
-            aes(label = after_stat(stratum))) +
-  theme_void()
+#install.packages("ggalluvial")
+#library(ggalluvial)
+#doctopicclassification$year <- rawData$year
+#doctopicclassification_crouped <- doctopicclassification%>%group_by(topic,receivers,year)%>%  tally()
+#ggplot(data = doctopicclassification_crouped,
+#       aes(axis1 = topic, axis2 = year , axis3 = receivers, y = n)) +
+#  geom_alluvium(aes(fill = topic), curve_type = "quintic") +
+#  geom_stratum(aes(fill = topic)) +
+#  geom_text(stat = "stratum",
+#            aes(label = after_stat(stratum))) +
+#  theme_void()
 ```
 
 #sentiment anlayisis
@@ -484,61 +513,66 @@ ggplot(data = doctopicclassification_crouped,
 install.packages("syuzhet")
 library(syuzhet)
 
-dfcorpus <- data.frame(text = unlist(sapply(myCorpus,`[`, "content")), stringsAsFactors = FALSE)
-dfcorpus2 <- data.frame( text = dfcorpus[!(dfcorpus$text == ""),])
+#conversion of the clenaed corpus into a data frame
+myCorpusDf <- data.frame(text = unlist(sapply(myCorpus,`[`, "content")), stringsAsFactors = FALSE)
+myCorpusDf <- data.frame(text = myCorpusDf[!(myCorpusDf$text == ""),])
 
-vector <- as.character(dfcorpus2$text)
+lettersVector <- as.character(myCorpusDf$text)
 #obtaining sentiment scores
-sentimentscores <- get_nrc_sentiment(vector, language = "italian")
-#remove the positive and negative columns
-sentimentscores[9:10] <- NULL 
+sentimentEmotionsScores <- get_nrc_sentiment(lettersVector, language = "italian")
+
 
 #combine text sentiment, datae and correspondances columns
-sentimentdf <- cbind(doctopicclassification, vector,sentimentscores)
+senttimentEmotionsScoresDf <- cbind(docTopicClassificationDf, lettersVector,sentimentEmotionsScores)
 
 #barplot for sentiment
-barplot(colSums(sentimentscores), col = rainbow(8), ylab = "count", main = "Overall sentiment analysis", las = 2)
+overallSentimentEmotion <- subset(sentimentEmotionsScores, select = -c(9,10))
+barplot(colSums(overallSentimentEmotion), col = rainbow(8), ylab = "Count", main = "Overall sentiment analysis", las = 2)
 ```
 
 #plot the graph to see the sentiment analysis for each topic
 ```{r}
-emotions <-c("anger","anticipation","disgust","fear","joy","sadness","surprise","trust")
+emotions<-c("anger","anticipation","disgust","fear","joy","sadness","surprise","trust")
+sentiment <- c("negative","positive")
 
+plotSentimentAanalysisOverTopic <- function(SentimentEmotionVector)
 for(t in 1:5){
-  sentimentdf_partial <- sentimentdf[sentimentdf$topic == t,] 
+  sentimentdf_partial <- sentimentEmotionsScoresDf[sentimentEmotionsScoresDf$topic == t,] 
   
   WordsForSentiment = c()
   
-  for(e in emotions ){
+  for(e in SentimentEmotionVector ){
     
     value <- sum(sentimentdf_partial[,e])
     WordsForSentiment <- c(WordsForSentiment, value)
   }
   
-  names(WordsForSentiment)  <-emotions
+  names(WordsForSentiment)  <- SentimentEmotionVector
  
   totalSentimentWordTopic <- sum(WordsForSentiment)
   
   relativePercentage <- c()
   
-  for(e in emotions){
+  for(e in SentimentEmotionVector){
     
     value <- WordsForSentiment[[e]]
     relativePercentage <- c(relativePercentage, value/totalSentimentWordTopic *100)
   }
   
-  sentimentTopicdf <- data.frame(relativePercentage, emotions)
+  SentimentEmotiondf <- data.frame(relativePercentage, SentimentEmotionVector)
   
-  sentimentTopicdf<- sentimentTopicdf %>% mutate(labels = percent(relativePercentage, scale = 1, accuracy = 0.01))
+  SentimentEmotiondf<- SentimentEmotiondf %>% mutate(labels = percent(relativePercentage, scale = 1, accuracy = 0.01))
   
-  print(ggplot(sentimentTopicdf, aes(x = "" , y = relativePercentage, fill = emotions)) +
+  print(ggplot(SentimentEmotiondf, aes(x = "" , y = relativePercentage, fill = SentimentEmotionVector)) +
   geom_col(width = 1, color = 1) +
   geom_text(aes(label = labels), position = position_stack(vjust = 0.5))+
   coord_polar(theta = "y") +
   theme_void()+
   ggtitle(paste0("Topic ", t)))
 }
-  
+
+plotSentimentAanalysisOverTopic(emotions) 
+plotSentimentAanalysisOverTopic(sentiment)
 
 
 
@@ -546,55 +580,59 @@ for(t in 1:5){
 
 #plot the proprotion of emotions during the years
 ```{r}
-sentimentdf%>%ungroup()
-#angerbeforgroup <- count(sentimentdf, trust)
-sentimentdf %>% group_by(year)
-#angernumber <- count(sentimentdf, trust)
 
-yearsvector <- rownames(table(sentimentdf$year))
-#tableex
-datalist <- data.frame(relativePercentage = integer(),emotions = character(),year =integer())
-for (year in yearsvector){
-  sentimentdf_partial_year <- sentimentdf[sentimentdf$year == year,]
+plotSentimentAanalysisOverTime <- function(SentimentEmotionVector, facet_rows, facet_col, wrap){
+
+  #set the data frame to collect the data for each year
+  yearsvector <- rownames(table(sentimentEmotionsScoresDf$year))
+  datalist <- data.frame(relativePercentage = integer(), SentimentEmotionVector = character(),year =integer())
   
-  WordsForSentiment = c()
-  
-  for(e in emotions ){
+  #for each year calculate the percentage of each emotion and add it to the datalist dataframe
+  for (year in yearsvector){
+    sentimentdf_partial_year <- sentimentEmotionsScoresDf[sentimentEmotionsScoresDf$year == year,]
     
-    value <- sum(sentimentdf_partial_year[,e])
-    WordsForSentiment <- c(WordsForSentiment, value)
+    WordsForSentiment = c()
+    
+    #count the number of words for each sentiment_emotion
+    for(e in SentimentEmotionVector ){
+      
+      value <- sum(sentimentdf_partial_year[,e])
+      WordsForSentiment <- c(WordsForSentiment, value)
+    }
+    
+    names(WordsForSentiment)  <- SentimentEmotionVector
+    
+    #count the total number of words for all the sentiment_emotions
+    TotalSentimentEmotionWords <- sum(WordsForSentiment)
+    
+    relativePercentage <- c()
+    
+    #for each sentiment_emotion caluclate the percentage
+    for(e in SentimentEmotionVector){
+      
+      value <- WordsForSentiment[[e]]
+      relativePercentage <- c(relativePercentage, value/TotalSentimentEmotionWords *100)
+    }
+    
+    SentimentEmotiondf <- data.frame(relativePercentage, SentimentEmotionVector, year)
+    datalist<-rbind(datalist, SentimentEmotiondf)
+    
   }
   
-  names(WordsForSentiment)  <- emotions
+  datalist$year = as.Date(as.character(datalist$year), format = "%Y")
  
-  totalSentimentWordTopic <- sum(WordsForSentiment)
-  
-  relativePercentage <- c()
-  
-  for(e in emotions){
-    
-    value <- WordsForSentiment[[e]]
-    relativePercentage <- c(relativePercentage, value/totalSentimentWordTopic *100)
+  if(wrap == TRUE){ 
+  print(ggplot(datalist, aes(x = year %m-% months(12) , y = relativePercentage, fill = SentimentEmotionVector, group = SentimentEmotionVector, colour = SentimentEmotionVector)) +scale_y_continuous(name = "Percentage (%)")+geom_line()+geom_point()+facet_wrap(~ SentimentEmotionVector, nrow = facet_rows, ncol = facet_col)+xlab("year")+ theme(legend.position = "none"))
   }
-  
-  sentimentTopicdf <- data.frame(relativePercentage, emotions, year)
-  datalist<-rbind(datalist, sentimentTopicdf)
-  
+  else{
+    print(ggplot(datalist, aes(x = year %m-% months(12) , y = relativePercentage, fill = SentimentEmotionVector, group = SentimentEmotionVector, colour = SentimentEmotionVector)) +scale_y_continuous(name = "Percentage (%)")+geom_line()+geom_point()+xlab("year")+ theme(legend.position = "none"))
+  }
 }
 
-ggplot(doctopicclassification,mapping = aes(x= date, fill = topic, group=topic, colour = topic))+ geom_freqpoly()
-  
-  print(ggplot(datalist, aes(x = year , y = relativePercentage, fill = emotions, group = emotions, colour = emotions)) +
-  geom_line())
-<<<<<<< HEAD
-  
-=======
-  #geom_text(aes(label = labels), position = position_stack(vjust = 0.5))+
-  #coord_polar(theta = "y") +
-  #theme_void()+
-  #ggtitle(paste0("Topic ", t)))
+plotSentimentAanalysisOverTime(emotions,2,4,TRUE)
+plotSentimentAanalysisOverTime(sentiment,2,1,FALSE)
 
->>>>>>> e6afe7b77080da7b43aad6b46fa542ac9e8d7f5a
+
 ```
 
 
