@@ -401,7 +401,7 @@ date_2 <- as.Date(daterange[2])
 yearsvector <- rownames(table(docTopicClassificationDf$year))
 
 originalTopics <- c(1,2,3,4,5)
-datalistTopicYearDf <- data.frame(year = integer(),topics =integer(),numberTopicsYear= integer())
+datalistTopicYearDf <- data.frame(year = integer(),topics =integer(),numberTopicsYear= integer(), relativePercentage = integer() )
 
 for(year in yearsvector){
   docTopicClassification_year <- docTopicClassificationDf[docTopicClassificationDf$year == year,]
@@ -427,6 +427,9 @@ for(year in yearsvector){
       }
     }
     
+    totalLettersYear <- sum(letterTopicYearDf$numberTopicsYear)
+    
+    letterTopicYearDf <- letterTopicYearDf%>% mutate(relativePercentage = numberTopicsYear/totalLettersYear*100)
 
     datalistTopicYearDf<-rbind(datalistTopicYearDf, letterTopicYearDf)
     
@@ -437,6 +440,8 @@ datalistTopicYearDf$year = as.Date(as.character(datalistTopicYearDf$year), forma
 
 #plot the graph of the number of letters per topic during each year 
 print(ggplot(datalistTopicYearDf, aes(x = year %m-% months(12) , y = numberTopicsYear, fill = topics, group = topics, colour = topics)) +scale_y_continuous(name = "count")+ geom_line()+geom_point()+facet_wrap(~ factor(topics, levels = c(1,2,3,4,5)))+ theme(legend.position = "none") + xlab("year"))
+
+print(ggplot(datalistTopicYearDf, aes(x = year %m-% months(12) , y = relativePercentage, fill = topics, group = topics, colour = topics)) +scale_y_continuous(name = "Percentage (%)")+ geom_line()+geom_point()+facet_wrap(~ factor(topics, levels = c(1,2,3,4,5)))+ theme(legend.position = "none") + xlab("year"))
 
 
 
@@ -621,7 +626,7 @@ plotSentimentAanalysisOverTime <- function(SentimentEmotionVector, facet_rows, f
     
     relativePercentage <- c()
     
-    #for each sentiment_emotion caluclate the percentage
+    #for each sentiment_emotion calculate the percentage
     for(e in SentimentEmotionVector){
       
       value <- WordsForSentiment[[e]]
