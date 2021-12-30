@@ -406,7 +406,7 @@ datalistTopicYearDf <- data.frame(year = integer(),topics =integer(),numberTopic
 for(year in yearsvector){
   docTopicClassification_year <- docTopicClassificationDf[docTopicClassificationDf$year == year,]
     
-    #count the number of different topics for the current year
+    #count the number of letters related to each topic from a specific year
     numberTopicsYear <- table(docTopicClassification_year$topic)
     print(numberTopicsYear)
     topics <- row.names(numberTopicsYear)
@@ -417,7 +417,7 @@ for(year in yearsvector){
     missingTopicForYear <- factor(setdiff(originalTopics,topics))
     iterations <- length(missingTopicForYear)
     
-    #if the number of missing topics per ywr is different form zero we count 0
+    #if the number of missing topics per year is different form zero we count 0
     # for all the missing topics
     if(iterations != 0){
     
@@ -492,7 +492,7 @@ set.seed(2)
 pal <- randomColor(count = length(unique(docTopicClassificationDf$correspondence)))
 pal = setNames(pal, unique(docTopicClassificationDf$correspondence))
 
-for(i in 1:5){
+for(i in originalTopics){
   docTopicClassification_partial <- docTopicClassificationDf[docTopicClassificationDf$topic == i,]   
   
 correspondencePercentageTopicDf <- as.data.frame(table(docTopicClassification_partial$correspondence)) %>% subset(Freq !=0) %>% mutate(perc = Freq /sum(Freq) * 100 ) %>% mutate(labels = percent(perc, scale = 1, accuracy = 0.01)) %>% rename(correspondence =  Var1)
@@ -542,7 +542,7 @@ sentimentEmotionsScores <- get_nrc_sentiment(lettersVector, language = "italian"
 
 
 #combine text sentiment, datae and correspondances columns
-senttimentEmotionsScoresDf <- cbind(docTopicClassificationDf, lettersVector,sentimentEmotionsScores)
+sentimentEmotionsScoresDf <- cbind(docTopicClassificationDf, lettersVector,sentimentEmotionsScores)
 
 #barplot for sentiment
 overallSentimentEmotion <- subset(sentimentEmotionsScores, select = -c(9,10))
@@ -555,11 +555,12 @@ emotions<-c("anger","anticipation","disgust","fear","joy","sadness","surprise","
 sentiment <- c("negative","positive")
 
 plotSentimentAanalysisOverTopic <- function(SentimentEmotionVector)
-for(t in 1:5){
+for(t in originalTopics){
   sentimentdf_partial <- sentimentEmotionsScoresDf[sentimentEmotionsScoresDf$topic == t,] 
   
   WordsForSentiment = c()
   
+  #count the number of words of a particular sentimentemotion from all the letters of a specific topic
   for(e in SentimentEmotionVector ){
     
     value <- sum(sentimentdf_partial[,e])
@@ -568,16 +569,19 @@ for(t in 1:5){
   
   names(WordsForSentiment)  <- SentimentEmotionVector
  
+  #we calculate the total number of words from teh different sentiments of a specific topic
   totalSentimentWordTopic <- sum(WordsForSentiment)
   
   relativePercentage <- c()
   
+  #we calculate the percentage of words related to a sentiment in each topic
   for(e in SentimentEmotionVector){
     
     value <- WordsForSentiment[[e]]
     relativePercentage <- c(relativePercentage, value/totalSentimentWordTopic *100)
   }
   
+  #we create the appropriate data frame to plot the percentage ofr each topic of each emotion
   SentimentEmotiondf <- data.frame(relativePercentage, SentimentEmotionVector)
   
   SentimentEmotiondf<- SentimentEmotiondf %>% mutate(labels = percent(relativePercentage, scale = 1, accuracy = 0.01))
