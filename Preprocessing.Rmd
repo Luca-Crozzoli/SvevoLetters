@@ -648,6 +648,62 @@ for(c in correspondence){
 plotSentimentAanalysisOverCorrespondence(emotions) 
 plotSentimentAanalysisOverCorrespondence(sentiment)
 ```
+```{r}
+plotSentimentPiePercentage <- function(SentimentEmotionVector,reference,topic,correspondence){
+label = c()
+  for(t in reference){
+    
+    if(topic == TRUE){
+    sentimentdf_partial <- sentimentEmotionsScoresDf[sentimentEmotionsScoresDf$topic == t,] 
+    label <- c("Topic ")
+    }
+    if(correspondence == TRUE){
+     sentimentdf_partial <- sentimentEmotionsScoresDf[sentimentEmotionsScoresDf$correspondence == t,]  
+    label <- c("Correspondence ")
+    }
+    
+    WordsForSentiment = c()
+    
+    #count the number of words of a particular sentimentemotion from all the letters of a specific topic
+    for(e in SentimentEmotionVector ){
+      
+      value <- sum(sentimentdf_partial[,e])
+      WordsForSentiment <- c(WordsForSentiment, value)
+    }
+    
+    names(WordsForSentiment)  <- SentimentEmotionVector
+   
+    #we calculate the total number of words from teh different sentiments of a specific topic
+    totalSentimentWordTopic <- sum(WordsForSentiment)
+    
+    relativePercentage <- c()
+    
+    #we calculate the percentage of words related to a sentiment in each topic
+    for(e in SentimentEmotionVector){
+      
+      value <- WordsForSentiment[[e]]
+      relativePercentage <- c(relativePercentage, value/totalSentimentWordTopic *100)
+    }
+    
+    #we create the appropriate data frame to plot the percentage ofr each topic of each emotion
+    SentimentEmotiondf <- data.frame(relativePercentage, SentimentEmotionVector)
+    
+    SentimentEmotiondf<- SentimentEmotiondf %>% mutate(labels = percent(relativePercentage, scale = 1, accuracy = 0.01))
+    
+    print(ggplot(SentimentEmotiondf, aes(x = "" , y = relativePercentage, fill = SentimentEmotionVector)) +
+    geom_col(width = 1, color = 1) +
+    geom_text(aes(label = labels), position = position_stack(vjust = 0.5))+
+    coord_polar(theta = "y") +
+    theme_void()+
+    ggtitle(paste0(label, t)))
+  }
+}
+plotSentimentPiePercentage(emotions,originalTopics,TRUE,FALSE)
+plotSentimentPiePercentage(sentiment,originalTopics,TRUE,FALSE)
+plotSentimentPiePercentage(emotions,correspondence,FALSE,TRUE)
+plotSentimentPiePercentage(sentiment,correspondence,FALSE,TRUE)
+
+```
 
 #plot the proprotion of emotions during the years
 ```{r}
