@@ -400,8 +400,8 @@ date_2 <- as.Date(daterange[2])
 
 yearsvector <- rownames(table(docTopicClassificationDf$year))
 
-topics <- c(1,2,3,4,5)
-datalistTopicYearDf <- data.frame(year = integer(), numberTopicsYear= integer(),topics =integer())
+originalTopics <- c(1,2,3,4,5)
+datalistTopicYearDf <- data.frame(year = integer(),topics =integer(),numberTopicsYear= integer())
 
 for(year in yearsvector){
   docTopicClassification_year <- docTopicClassificationDf[docTopicClassificationDf$year == year,]
@@ -413,10 +413,24 @@ for(year in yearsvector){
   
     
     letterTopicYearDf <- data.frame(year,numberTopicsYear)%>%rename(topics =  Var1,numberTopicsYear = Freq)
+    
+    missingTopicForYear <- factor(setdiff(originalTopics,topics))
+    iterations <- length(missingTopicForYear)
+    
+    #if the number of missing topics per ywr is different form zero we count 0
+    # for all the missing topics
+    if(iterations != 0){
+    
+      for(i in 1:iterations){
+        row <- data.frame(year = year, topics = missingTopicForYear[i], numberTopicsYear = 0)
+        letterTopicYearDf <- rbind(letterTopicYearDf,row)
+      }
+    }
+    
 
     datalistTopicYearDf<-rbind(datalistTopicYearDf, letterTopicYearDf)
     
- }
+}
 
 #convert the year into a date object  
 datalistTopicYearDf$year = as.Date(as.character(datalistTopicYearDf$year), format = "%Y")
