@@ -323,10 +323,14 @@ Ntopicpruned <- plot(dftfNtopicPruned)
 ```{r}
 install.packages("topicmodels")
 library(topicmodels)
+
+originalTopics <- seq(1,Ntopicpruned, by=1)
+kTopic <- length(originalTopics)
+
 dtm_lda <- Matrix::Matrix(as.matrix(dtmtfpruned), sparse = T)
 set.seed(123)
 lda <- FitLdaModel(dtm =dtm_lda,
-                        k = 5, 
+                        k = kTopic , 
                         iterations = 500,
                         burnin = 400, 
                         calc_coherence = T
@@ -382,7 +386,7 @@ letters_word_topic %>%
 ```{r}
 docThetaTopic <- lda$theta %>% 
    as.data.frame()
-colnames(docThetaTopic) <- c(1,2,3,4,5)
+colnames(docThetaTopic) <- originalTopics#c(1,2,3,4,5)
 
 docTopicClassificationDf <- as.data.frame(cbind(id=row.names(rawData), topic= apply(docThetaTopic,1,function(x)names(docThetaTopic)[which.max(x)]), year = rawData$year))
 
@@ -400,7 +404,6 @@ date_2 <- as.Date(daterange[2])
 
 yearsvector <- rownames(table(docTopicClassificationDf$year))
 
-originalTopics <- c(1,2,3,4,5)
 datalistTopicYearDf <- data.frame(year = integer(),topics =integer(),numberTopicsYear= integer(), relativePercentage = integer() )
 
 for(year in yearsvector){
@@ -472,10 +475,6 @@ correspondenceLessThan5 <- as.data.frame(table(docTopicClassificationDf$correspo
 
 correspondenceLessThan5 <- as.vector(correspondenceLessThan5$correspondence)
 
-#correspondenceLessThan5 <- subset(numberLettersCorrespondence, numberLettersCorrespondence$count <=5 )
-
-#correspondenceLessThan5 <- as.vector(correspondenceLessThan5$correspondence)
-
 docTopicClassificationDf$correspondence[docTopicClassificationDf$correspondence %in% correspondenceLessThan5]<- "Others"
 ```
 
@@ -512,22 +511,9 @@ print(ggplot(correspondencePercentageTopicDf, aes(x = "" , y = perc, fill = corr
   ggtitle(paste0("Topic ", i)))
 }
 ```
-#Triyng alluvial plot
-```{r}
-#install.packages("ggalluvial")
-#library(ggalluvial)
-#doctopicclassification$year <- rawData$year
-#doctopicclassification_crouped <- doctopicclassification%>%group_by(topic,receivers,year)%>%  tally()
-#ggplot(data = doctopicclassification_crouped,
-#       aes(axis1 = topic, axis2 = year , axis3 = receivers, y = n)) +
-#  geom_alluvium(aes(fill = topic), curve_type = "quintic") +
-#  geom_stratum(aes(fill = topic)) +
-#  geom_text(stat = "stratum",
-#            aes(label = after_stat(stratum))) +
-#  theme_void()
-```
 
-#sentiment anlayisis
+
+##Sentiment anlayisis
 ```{r}
 install.packages("syuzhet")
 library(syuzhet)
@@ -549,107 +535,12 @@ overallSentimentEmotion <- subset(sentimentEmotionsScores, select = -c(9,10))
 barplot(colSums(overallSentimentEmotion), col = rainbow(8), ylab = "Count", main = "Overall sentiment analysis", las = 2)
 ```
 
-#plot the graph to see the sentiment analysis for each topic
+#plot the graph to see the sentiment analysis for each topic and each correspondence
 ```{r}
 emotions<-c("anger","anticipation","disgust","fear","joy","sadness","surprise","trust")
 sentiment <- c("negative","positive")
-
-plotSentimentAanalysisOverTopic <- function(SentimentEmotionVector)
-for(t in originalTopics){
-  sentimentdf_partial <- sentimentEmotionsScoresDf[sentimentEmotionsScoresDf$topic == t,] 
-  
-  WordsForSentiment = c()
-  
-  #count the number of words of a particular sentimentemotion from all the letters of a specific topic
-  for(e in SentimentEmotionVector ){
-    
-    value <- sum(sentimentdf_partial[,e])
-    WordsForSentiment <- c(WordsForSentiment, value)
-  }
-  
-  names(WordsForSentiment)  <- SentimentEmotionVector
- 
-  #we calculate the total number of words from teh different sentiments of a specific topic
-  totalSentimentWordTopic <- sum(WordsForSentiment)
-  
-  relativePercentage <- c()
-  
-  #we calculate the percentage of words related to a sentiment in each topic
-  for(e in SentimentEmotionVector){
-    
-    value <- WordsForSentiment[[e]]
-    relativePercentage <- c(relativePercentage, value/totalSentimentWordTopic *100)
-  }
-  
-  #we create the appropriate data frame to plot the percentage ofr each topic of each emotion
-  SentimentEmotiondf <- data.frame(relativePercentage, SentimentEmotionVector)
-  
-  SentimentEmotiondf<- SentimentEmotiondf %>% mutate(labels = percent(relativePercentage, scale = 1, accuracy = 0.01))
-  
-  print(ggplot(SentimentEmotiondf, aes(x = "" , y = relativePercentage, fill = SentimentEmotionVector)) +
-  geom_col(width = 1, color = 1) +
-  geom_text(aes(label = labels), position = position_stack(vjust = 0.5))+
-  coord_polar(theta = "y") +
-  theme_void()+
-  ggtitle(paste0("Topic ", t)))
-}
-
-plotSentimentAanalysisOverTopic(emotions) 
-plotSentimentAanalysisOverTopic(sentiment)
-
-
-
-```
-```{r}
-
-
-
-  correspondence <- row.names(table(sentimentEmotionsScoresDf$correspondence))
-plotSentimentAanalysisOverCorrespondence <- function(SentimentEmotionVector){
-for(c in correspondence){
-  sentimentdf_partial <- sentimentEmotionsScoresDf[sentimentEmotionsScoresDf$correspondence == c,] 
-  WordsForSentiment = c()
-  
-  #count the number of words of a particular sentimentemotion from all the letters of a specific topic
-  for(e in SentimentEmotionVector ){
-    
-    value <- sum(sentimentdf_partial[,e])
-    WordsForSentiment <- c(WordsForSentiment, value)
-  }
-  
-  names(WordsForSentiment)  <- SentimentEmotionVector
- 
-  #we calculate the total number of words from teh different sentiments of a specific topic
-  totalSentimentWordTopic <- sum(WordsForSentiment)
-  
-  relativePercentage <- c()
-  
-  #we calculate the percentage of words related to a sentiment in each topic
-  for(e in SentimentEmotionVector){
-    
-    value <- WordsForSentiment[[e]]
-    relativePercentage <- c(relativePercentage, value/totalSentimentWordTopic *100)
-  }
-  
-  #we create the appropriate data frame to plot the percentage of each topic of each emotion
-  SentimentEmotiondf <- data.frame(relativePercentage, SentimentEmotionVector)
-  
-  SentimentEmotiondf<- SentimentEmotiondf %>% mutate(labels = percent(relativePercentage, scale = 1, accuracy = 0.01))
-  
-  print(ggplot(SentimentEmotiondf, aes(x = "" , y = relativePercentage, fill = SentimentEmotionVector)) +
-  geom_col(width = 1, color = 1) +
-  geom_text(aes(label = labels), position = position_stack(vjust = 0.5))+
-  coord_polar(theta = "y") +
-  theme_void()+
-  ggtitle(paste0("Correspondence ", c)))
-}
-}
-
-plotSentimentAanalysisOverCorrespondence(emotions) 
-plotSentimentAanalysisOverCorrespondence(sentiment)
-```
-```{r}
-plotSentimentPiePercentage <- function(SentimentEmotionVector,reference,topic,correspondence){
+correspondence <- row.names(table(sentimentEmotionsScoresDf$correspondence))
+plotSentimentPiePercentage <- function(Sentiment_Emotion,reference,topic,correspondence){
 label = c()
   for(t in reference){
     
@@ -665,13 +556,13 @@ label = c()
     WordsForSentiment = c()
     
     #count the number of words of a particular sentimentemotion from all the letters of a specific topic
-    for(e in SentimentEmotionVector ){
+    for(e in Sentiment_Emotion ){
       
       value <- sum(sentimentdf_partial[,e])
       WordsForSentiment <- c(WordsForSentiment, value)
     }
     
-    names(WordsForSentiment)  <- SentimentEmotionVector
+    names(WordsForSentiment)  <- Sentiment_Emotion
    
     #we calculate the total number of words from teh different sentiments of a specific topic
     totalSentimentWordTopic <- sum(WordsForSentiment)
@@ -679,18 +570,18 @@ label = c()
     relativePercentage <- c()
     
     #we calculate the percentage of words related to a sentiment in each topic
-    for(e in SentimentEmotionVector){
+    for(e in Sentiment_Emotion){
       
       value <- WordsForSentiment[[e]]
       relativePercentage <- c(relativePercentage, value/totalSentimentWordTopic *100)
     }
     
     #we create the appropriate data frame to plot the percentage ofr each topic of each emotion
-    SentimentEmotiondf <- data.frame(relativePercentage, SentimentEmotionVector)
+    SentimentEmotiondf <- data.frame(relativePercentage, Sentiment_Emotion)
     
     SentimentEmotiondf<- SentimentEmotiondf %>% mutate(labels = percent(relativePercentage, scale = 1, accuracy = 0.01))
     
-    print(ggplot(SentimentEmotiondf, aes(x = "" , y = relativePercentage, fill = SentimentEmotionVector)) +
+    print(ggplot(SentimentEmotiondf, aes(x = "" , y = relativePercentage, fill = Sentiment_Emotion)) +
     geom_col(width = 1, color = 1) +
     geom_text(aes(label = labels), position = position_stack(vjust = 0.5))+
     coord_polar(theta = "y") +
@@ -708,11 +599,11 @@ plotSentimentPiePercentage(sentiment,correspondence,FALSE,TRUE)
 #plot the proprotion of emotions during the years
 ```{r}
 
-plotSentimentAanalysisOverTime <- function(SentimentEmotionVector, facet_rows, facet_col, wrap){
+plotSentimentAanalysisOverTime <- function(Sentiment_Emotion, facet_rows, facet_col, wrap){
 
   #set the data frame to collect the data for each year
   yearsvector <- rownames(table(sentimentEmotionsScoresDf$year))
-  datalist <- data.frame(relativePercentage = integer(), SentimentEmotionVector = character(),year =integer())
+  datalist <- data.frame(relativePercentage = integer(), Sentiment_Emotion = character(),year =integer())
   
   #for each year calculate the percentage of each emotion and add it to the datalist dataframe
   for (year in yearsvector){
@@ -721,13 +612,13 @@ plotSentimentAanalysisOverTime <- function(SentimentEmotionVector, facet_rows, f
     WordsForSentiment = c()
     
     #count the number of words for each sentiment_emotion
-    for(e in SentimentEmotionVector ){
+    for(e in Sentiment_Emotion ){
       
       value <- sum(sentimentdf_partial_year[,e])
       WordsForSentiment <- c(WordsForSentiment, value)
     }
     
-    names(WordsForSentiment)  <- SentimentEmotionVector
+    names(WordsForSentiment)  <- Sentiment_Emotion
     
     #count the total number of words for all the sentiment_emotions
     TotalSentimentEmotionWords <- sum(WordsForSentiment)
@@ -735,13 +626,13 @@ plotSentimentAanalysisOverTime <- function(SentimentEmotionVector, facet_rows, f
     relativePercentage <- c()
     
     #for each sentiment_emotion calculate the percentage
-    for(e in SentimentEmotionVector){
+    for(e in Sentiment_Emotion){
       
       value <- WordsForSentiment[[e]]
       relativePercentage <- c(relativePercentage, value/TotalSentimentEmotionWords *100)
     }
     
-    SentimentEmotiondf <- data.frame(relativePercentage, SentimentEmotionVector, year)
+    SentimentEmotiondf <- data.frame(relativePercentage, Sentiment_Emotion, year)
     datalist<-rbind(datalist, SentimentEmotiondf)
     
   }
@@ -749,15 +640,17 @@ plotSentimentAanalysisOverTime <- function(SentimentEmotionVector, facet_rows, f
   datalist$year = as.Date(as.character(datalist$year), format = "%Y")
  
   if(wrap == TRUE){ 
-  print(ggplot(datalist, aes(x = year %m-% months(12) , y = relativePercentage, fill = SentimentEmotionVector, group = SentimentEmotionVector, colour = SentimentEmotionVector)) +scale_y_continuous(name = "Percentage (%)")+geom_line()+geom_point()+facet_wrap(~ SentimentEmotionVector, nrow = facet_rows, ncol = facet_col)+xlab("year")+ theme(legend.position = "none"))
+  print(ggplot(datalist, aes(x = year %m-% months(12) , y = relativePercentage, fill = Sentiment_Emotion, group = Sentiment_Emotion, colour = Sentiment_Emotion)) +scale_y_continuous(name = "Percentage (%)")+geom_line()+geom_point()+facet_wrap(~ Sentiment_Emotion, nrow = facet_rows, ncol = facet_col)+xlab("year")+ theme(legend.position = "none",axis.text.x = element_text(angle = 0, vjust = 1, hjust=0.7)))
   }
   else{
-    print(ggplot(datalist, aes(x = year %m-% months(12) , y = relativePercentage, fill = SentimentEmotionVector, group = SentimentEmotionVector, colour = SentimentEmotionVector)) +scale_y_continuous(name = "Percentage (%)")+geom_line()+geom_point()+xlab("year")+ theme(legend.position = "none"))
+    print(ggplot(datalist, aes(x = year %m-% months(12) , y = relativePercentage, fill = Sentiment_Emotion, group = Sentiment_Emotion, colour = Sentiment_Emotion)) +scale_y_continuous(name = "Percentage (%)")+geom_line()+geom_point()+xlab("year")+ theme(axis.text.x = element_text(angle = 0, vjust = 1, hjust=0.5)))
   }
 }
 
 plotSentimentAanalysisOverTime(emotions,2,4,TRUE)
 plotSentimentAanalysisOverTime(sentiment,2,1,FALSE)
+install.packages("svglite")
+ggsave("lastplot.svg")
 
 
 ```
